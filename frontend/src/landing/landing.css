@@ -1,0 +1,880 @@
+/* ============================================
+   LANDING PAGE - GLOBAL STYLES
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.landing-container {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.landing-header {
+  background: white;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.logout-button {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+
+.logout-button:hover {
+  background: #333;
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.15);
+  transform: translateY(-1px);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(26, 26, 26, 0.1);
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero-section {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  padding: 60px 20px;
+  text-align: center;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.hero-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+
+.hero-subtitle {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   TABS SECTION
+   ============================================ */
+
+.tabs-section {
+  background: white;
+  padding: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  position: sticky;
+  top: 70px;
+  z-index: 99;
+}
+
+.tabs-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+
+.tab-button:hover {
+  color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+.tab-button.active {
+  color: #1a1a1a;
+  border-bottom-color: #1a1a1a;
+  background: transparent;
+}
+
+.tab-icon {
+  font-size: 16px;
+}
+
+/* ============================================
+   CONTENT SECTION
+   ============================================ */
+
+.content-section {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 60px 20px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+  animation: fadeInUp 0.8s ease-out 0.1s both;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.section-description {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* ============================================
+   OBJECTIVES SECTION
+   ============================================ */
+
+.objectives-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.objective-card {
+  background: white;
+  padding: 32px 24px;
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.objective-card:nth-child(1) { animation-delay: 0.1s; }
+.objective-card:nth-child(2) { animation-delay: 0.15s; }
+.objective-card:nth-child(3) { animation-delay: 0.2s; }
+.objective-card:nth-child(4) { animation-delay: 0.25s; }
+.objective-card:nth-child(5) { animation-delay: 0.3s; }
+.objective-card:nth-child(6) { animation-delay: 0.35s; }
+
+.objective-card:hover {
+  border-color: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+}
+
+.objective-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.objective-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.objective-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* ============================================
+   TUTORIAL SECTION
+   ============================================ */
+
+.tutorials-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutorial-card {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.tutorial-card:nth-child(1) { animation-delay: 0.1s; }
+.tutorial-card:nth-child(2) { animation-delay: 0.15s; }
+.tutorial-card:nth-child(3) { animation-delay: 0.2s; }
+.tutorial-card:nth-child(4) { animation-delay: 0.25s; }
+.tutorial-card:nth-child(5) { animation-delay: 0.3s; }
+
+.tutorial-card:hover {
+  border-color: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.tutorial-card.expanded {
+  border-color: #1a1a1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.tutorial-header {
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.tutorial-header:hover {
+  background: #f8f9fa;
+}
+
+.tutorial-header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.tutorial-image {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.tutorial-info {
+  flex: 1;
+  text-align: left;
+}
+
+.tutorial-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.tutorial-description {
+  font-size: 13px;
+  color: #999;
+  font-weight: 400;
+  margin: 0;
+}
+
+.expand-icon {
+  font-size: 12px;
+  color: #999;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+  color: #1a1a1a;
+}
+
+.tutorial-content {
+  padding: 0 24px 24px 24px;
+  border-top: 1px solid #e8e8e8;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tutorial-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  padding-top: 4px;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.landing-footer {
+  background: white;
+  border-top: 1px solid #e8e8e8;
+  padding: 40px 20px;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-text {
+  font-size: 13px;
+  color: #999;
+  font-weight: 400;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-link {
+  font-size: 13px;
+  color: #999;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-weight: 500;
+}
+
+.footer-link:hover {
+  color: #1a1a1a;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+  }
+
+  .hero-stats {
+    gap: 40px;
+  }
+
+  .stat-number {
+    font-size: 24px;
+  }
+
+  .tabs-container {
+    flex-direction: column;
+  }
+
+  .tab-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+
+  .objectives-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tutorial-header-content {
+    gap: 12px;
+  }
+
+  .tutorial-image {
+    font-size: 28px;
+  }
+
+  .tutorial-title {
+    font-size: 14px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-links {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-header {
+    padding: 16px 0;
+  }
+
+  .header-content {
+    padding: 0 16px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .tagline {
+    font-size: 10px;
+  }
+
+  .logout-button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .hero-section {
+    padding: 40px 16px;
+  }
+
+  .hero-title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+    margin-bottom: 30px;
+  }
+
+  .hero-stats {
+    gap: 30px;
+  }
+
+  .stat-number {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .tabs-section {
+    padding: 16px;
+    top: 60px;
+  }
+
+  .tabs-container {
+    gap: 8px;
+  }
+
+  .tab-button {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .tab-icon {
+    font-size: 14px;
+  }
+
+  .content-section {
+    padding: 40px 16px;
+  }
+
+  .section-header {
+    margin-bottom: 30px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .section-description {
+    font-size: 13px;
+  }
+
+  .objective-card {
+    padding: 24px 16px;
+  }
+
+  .objective-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  .objective-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .objective-description {
+    font-size: 13px;
+  }
+
+  .tutorial-header {
+    padding: 16px;
+  }
+
+  .tutorial-header-content {
+    gap: 12px;
+  }
+
+  .tutorial-image {
+    font-size: 24px;
+  }
+
+  .tutorial-title {
+    font-size: 13px;
+  }
+
+  .tutorial-description {
+    font-size: 12px;
+  }
+
+  .tutorial-content {
+    padding: 0 16px 16px 16px;
+  }
+
+  .tutorial-steps {
+    gap: 12px;
+  }
+
+  .step-number {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .step-text {
+    font-size: 13px;
+  }
+
+  .landing-footer {
+    padding: 24px 16px;
+  }
+
+  .footer-content {
+    gap: 12px;
+  }
+
+  .footer-text {
+    font-size: 12px;
+  }
+
+  .footer-links {
+    gap: 16px;
+  }
+
+  .footer-link {
+    font-size: 12px;
+  }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .landing-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
+    color: #fff;
+  }
+
+  .landing-header {
+    background: #242424;
+    border-bottom-color: #333;
+  }
+
+  .logo {
+    color: #fff;
+  }
+
+  .tagline {
+    color: #999;
+  }
+
+  .logout-button {
+    background: #fff;
+    color: #1a1a1a;
+  }
+
+  .logout-button:hover {
+    background: #f0f0f0;
+  }
+
+  .hero-section {
+    background: linear-gradient(135deg, #242424 0%, #1a1a1a 100%);
+    border-bottom-color: #333;
+  }
+
+  .hero-title {
+    color: #fff;
+  }
+
+  .hero-subtitle {
+    color: #aaa;
+  }
+
+  .stat-number {
+    color: #fff;
+  }
+
+  .stat-label {
+    color: #999;
+  }
+
+  .tabs-section {
+    background: #242424;
+    border-bottom-color: #333;
+  }
+
+  .tab-button {
+    color: #999;
+  }
+
+  .tab-button:hover {
+    color: #fff;
+    background: #333;
+  }
+
+  .tab-button.active {
+    color: #fff;
+    border-bottom-color: #fff;
+  }
+
+  .section-title {
+    color: #fff;
+  }
+
+  .section-description {
+    color: #aaa;
+  }
+
+  .objective-card {
+    background: #242424;
+    border-color: #333;
+  }
+
+  .objective-card:hover {
+    border-color: #fff;
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+  }
+
+  .objective-title {
+    color: #fff;
+  }
+
+  .objective-description {
+    color: #aaa;
+  }
+
+  .tutorial-card {
+    background: #242424;
+    border-color: #333;
+  }
+
+  .tutorial-card:hover {
+    border-color: #fff;
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.1);
+  }
+
+  .tutorial-card.expanded {
+    border-color: #fff;
+  }
+
+  .tutorial-header:hover {
+    background: #333;
+  }
+
+  .tutorial-title {
+    color: #fff;
+  }
+
+  .tutorial-description {
+    color: #999;
+  }
+
+  .expand-icon {
+    color: #999;
+  }
+
+  .expand-icon.rotated {
+    color: #fff;
+  }
+
+  .tutorial-content {
+    border-top-color: #333;
+  }
+
+  .step-number {
+    background: #333;
+    color: #fff;
+  }
+
+  .step-text {
+    color: #aaa;
+  }
+
+  .landing-footer {
+    background: #242424;
+    border-top-color: #333;
+  }
+
+  .footer-text {
+    color: #999;
+  }
+
+  .footer-link {
+    color: #999;
+  }
+
+  .footer-link:hover {
+    color: #fff;
+  }
+}

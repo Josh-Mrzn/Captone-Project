@@ -1,0 +1,558 @@
+/* ============================================
+   LOGIN CONTAINER & LAYOUT
+   ============================================ */
+
+.login-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  padding: 48px 40px;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-out 0.1s both;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   FORM CONTAINER & TRANSITIONS
+   ============================================ */
+
+.form-container {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.form-container.login .auth-form,
+.form-container.signup .auth-form,
+.form-container.forgot-password .auth-form {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideIn 0.4s ease-out;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.form-input {
+  padding: 12px 14px;
+  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #1a1a1a;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: inherit;
+  outline: none;
+}
+
+.form-input:focus {
+  background: white;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
+}
+
+.form-input:hover:not(:disabled) {
+  border-color: #d0d0d0;
+}
+
+.form-input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.form-input.error {
+  border-color: #e74c3c;
+  background: #fff5f5;
+}
+
+.form-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+/* ============================================
+   ERROR & SUCCESS MESSAGES
+   ============================================ */
+
+.error-message {
+  font-size: 12px;
+  color: #e74c3c;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.error-banner {
+  padding: 12px 14px;
+  background: #fff5f5;
+  border: 1px solid #e74c3c;
+  border-radius: 8px;
+  color: #e74c3c;
+  font-size: 13px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.success-banner {
+  padding: 12px 14px;
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 8px;
+  color: #16a34a;
+  font-size: 13px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ============================================
+   FORM FOOTER & LINKS
+   ============================================ */
+
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  color: #1a1a1a;
+}
+
+.forgot-password-link:active {
+  color: #999;
+}
+
+/* ============================================
+   SUBMIT BUTTON
+   ============================================ */
+
+.submit-button {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: inherit;
+  outline: none;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: #333;
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.15);
+  transform: translateY(-1px);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(26, 26, 26, 0.1);
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   DIVIDER
+   ============================================ */
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 24px 0;
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e0e0e0;
+  z-index: 0;
+}
+
+.divider span {
+  position: relative;
+  background: white;
+  padding: 0 12px;
+  z-index: 1;
+}
+
+/* ============================================
+   SOCIAL BUTTONS
+   ============================================ */
+
+.social-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.social-button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  color: #1a1a1a;
+  outline: none;
+}
+
+.social-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.social-button:hover:not(:disabled) {
+  border-color: #1a1a1a;
+  background: #fafafa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.1);
+}
+
+.social-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.social-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.email-button {
+  color: #1a1a1a;
+}
+
+.facebook-button {
+  color: #1877f2;
+}
+
+/* ============================================
+   TOGGLE VIEW
+   ============================================ */
+
+.toggle-view {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 13px;
+  color: #666;
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+.toggle-view p {
+  margin: 0;
+}
+
+.toggle-link {
+  background: none;
+  border: none;
+  color: #1a1a1a;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.toggle-link:hover {
+  color: #666;
+  text-decoration: underline;
+}
+
+.toggle-link:active {
+  color: #999;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 480px) {
+  .login-wrapper {
+    padding: 32px 24px;
+    border-radius: 16px;
+  }
+
+  .login-title {
+    font-size: 24px;
+  }
+
+  .form-input,
+  .submit-button {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .social-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .social-button svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-wrapper {
+    padding: 24px 16px;
+  }
+
+  .login-title {
+    font-size: 20px;
+  }
+
+  .login-subtitle {
+    font-size: 12px;
+  }
+
+  .form-label {
+    font-size: 12px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .submit-button {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Optional)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .login-container {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  }
+
+  .login-wrapper {
+    background: #242424;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .login-title {
+    color: #fff;
+  }
+
+  .login-subtitle {
+    color: #aaa;
+  }
+
+  .form-label {
+    color: #fff;
+  }
+
+  .form-input {
+    background: #333;
+    border-color: #444;
+    color: #fff;
+  }
+
+  .form-input:focus {
+    background: #3a3a3a;
+    border-color: #fff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  }
+
+  .form-input:hover:not(:disabled) {
+    border-color: #555;
+  }
+
+  .form-input.error {
+    background: #3a2020;
+    border-color: #e74c3c;
+  }
+
+  .forgot-password-link {
+    color: #aaa;
+  }
+
+  .forgot-password-link:hover {
+    color: #fff;
+  }
+
+  .submit-button {
+    background: #fff;
+    color: #1a1a1a;
+  }
+
+  .submit-button:hover:not(:disabled) {
+    background: #f0f0f0;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+  }
+
+  .divider {
+    color: #666;
+  }
+
+  .divider::before {
+    background: #444;
+  }
+
+  .social-button {
+    background: #333;
+    border-color: #444;
+    color: #fff;
+  }
+
+  .social-button:hover:not(:disabled) {
+    border-color: #fff;
+    background: #3a3a3a;
+  }
+
+  .toggle-view {
+    color: #aaa;
+  }
+
+  .toggle-link {
+    color: #fff;
+  }
+
+  .toggle-link:hover {
+    color: #aaa;
+  }
+}
