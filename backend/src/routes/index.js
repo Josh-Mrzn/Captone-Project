@@ -1,6 +1,7 @@
 // backend/src/routes/index.js
 import express from "express";
 import authRoutes from "./authRoutes.js";
+import productRoutes from "./productRoutes.js";
 // import userRoutes from "./userRoutes.js";
 // import bannerRoutes from './bannerRoutes.js';
 
@@ -17,6 +18,7 @@ router.get("/", (req, res) => {
       register: "POST api/auth/register",
       login: "POST api/auth/login",
       logout: "POST api/auth/logout",
+      products: "GET api/products",
       // Add more as you create them:
       // profile: "GET api/user/profile",
       // banners: "GET api/banner",
@@ -26,6 +28,7 @@ router.get("/", (req, res) => {
 
 // === Mount Route Modules ===
 router.use("/auth", authRoutes);     // → /api/auth/...
+router.use("/products", productRoutes); // → /api/products/...
 // router.use("/user", userRoutes);     // → /api/user/...
 // router.use("/banner", bannerRoutes); // → /api/banner/...
 
