@@ -6,7 +6,7 @@ import { authRepository } from '../repositories/authRepository.js';
 const JWT_SECRET = process.env.JWT_SECRET;
 
 if (!JWT_SECRET) {
-  console.error("❌ JWT_SECRET is not defined in .env");
+  console.error(" JWT_SECRET is not defined in .env");
 }
 
 export const authService = {
