@@ -1,63 +1,69 @@
+# 🌾 AgriFair Backend Architecture (Layered MVC)
 
-# 🏢 Centaim Backend Architecture (Layered MVC)
+Welcome to the **AgriFair** Backend. This system is designed to enable **direct rice trading between farmers and buyers**, eliminating middlemen and ensuring fair pricing, transparency, and efficiency.
 
-Welcome to the **Centaim** Backend. This project utilizes a **4-Tier Layered MVC Architecture** designed for high security (**DevSpec**), real-time updates (**Sockets**), and enterprise scalability.
+Built with a **4-Tier Layered MVC Architecture**, it ensures scalability, security (**DevSpec**), and real-time updates for transactions and order tracking.
 
+---
 
 ## 📂 The Master Folder Structure
 
-This structure ensures a strict **Separation of Concerns**. No "Spaghetti Code" allowed!
+This structure enforces strict **Separation of Concerns** — keeping the system clean, scalable, and maintainable.
 
-### 🏛️ Core Layers
+---
+
+### 🌱 Core Layers
 | Folder | Responsibility |
 | :--- | :--- |
-| **`routes/`** | The "API Map." Connects URLs to their specific Controllers. |
-| **`controllers/`** | The "Waiters." They handle HTTP requests/responses but contain **zero** logic. |
-| **`services/`** | The "Brain." Where all business rules, calculations, and blockchain logic live. |
-| **`repositories/`** | The "Librarian." The **only** folder allowed to touch the Database (CRUD). |
-| **`models/`** | The "Blueprints." Mongoose/Prisma schemas defining the data structure. |
+| **`routes/`** | The "Marketplace Map." Connects API endpoints (orders, farmers, buyers, listings) to Controllers. |
+| **`controllers/`** | The "Handlers." Manage HTTP requests/responses with **no business logic**. |
+| **`services/`** | The "Marketplace Brain." Handles pricing logic, order matching, inventory, and transaction rules. |
+| **`repositories/`** | The "Data Access Layer." The **only** layer allowed to interact with the database (CRUD). |
+| **`models/`** | The "Schemas." Defines data structures like Farmers, Buyers, Rice Listings, Orders. |
+
+---
 
 ### 🛡️ Security & Operations (DevSpec)
 | Folder | Responsibility |
 | :--- | :--- |
-| **`validators/`** | **The Shield.** Uses Zod/Joi to block malicious data before it hits the logic. |
-| **`middleware/`** | Global guards (Auth, Rate Limiters, Error Handlers). |
-| **`errors/`** | Custom Error Classes for specific logging and professional API responses. |
-| **`logs/`** | **The Security Camera.** Stores audit trails and error logs. |
+| **`validators/`** | **The Gatekeeper.** Validates farmer listings, buyer orders, and user inputs (Zod/Joi). |
+| **`middleware/`** | Global guards (Authentication, Rate Limiting, Error Handling). |
+| **`errors/`** | Custom error handling for consistent API responses. |
+| **`logs/`** | **Audit Trail.** Tracks transactions, errors, and system activity. |
 
-### ⚡ Extensions & Utilities
+---
+
+### 🚜 Marketplace Features & Utilities
 | Folder | Responsibility |
 | :--- | :--- |
-| **`sockets/`** | Real-time "Push" event handlers (Socket.io). |
-| **`jobs/`** | Background tasks (Cron jobs, scheduled reports). |
-| **`scripts/`** | One-time tools for seeding data or migrations. |
-| **`storage/`** | Local handling for uploads (Resumes, Profile Pictures). |
-| **`utils/`** | Reusable helpers (JWT, Bcrypt, Date formatters). |
-| **`configs/`** | Centralized connection setups (DB, Redis, Web3). |
-| **`tests/`** | Integration and Unit tests for the API. |
+| **`sockets/`** | Real-time updates (order status, new listings, buyer-farmer notifications). |
+| **`jobs/`** | Background tasks (price updates, order expiration, reporting). |
+| **`scripts/`** | Data seeding (sample farmers, rice inventory). |
+| **`storage/`** | Handles uploads (documents, certifications, proof of harvest). |
+| **`utils/`** | Helpers (JWT auth, hashing, pricing calculators). |
+| **`configs/`** | Configurations (DB connection, Redis, environment setup). |
+| **`tests/`** | Unit and integration testing for reliability. |
 
 ---
 
 ## 📦 Installation Guide
 
-Run these commands to set up the environment.
-
-### 1. Main Framework & Database
+### 1. Core Framework & Database
 ```bash
 npm install express mongoose dotenv cors
 ```
 
-### 2. Security Shield (Critical for DevSpec)
+### 2. Security Layer (Critical)
 ```bash
 npm install helmet zod express-rate-limit jsonwebtoken bcryptjs
 ```
 
-### 3. Real-Time & Performance
+### 3. Real-Time Features
 ```bash
 npm install socket.io redis
 ```
 
-### 4. Logging & Utilities
+### 4. Logging & Monitoring
 ```bash
 npm install morgan winston
 ```
@@ -69,17 +75,24 @@ npm install -D nodemon
 
 ---
 
-## 🔄 The "Golden" Request Flow
+## 🔄 The "AgriFair" Request Flow
 
+1. **Client (Farmer/Buyer)** ➔ `routes/` (API endpoint access)
+2. `routes/` ➔ `middleware/` (Authentication & security checks)
+3. `middleware/` ➔ `validators/` (Input validation for listings/orders)
+4. `validators/` ➔ `controllers/` (Request handling)
+5. `controllers/` ➔ `services/` (Business logic: pricing, matching, order handling)
+6. `services/` ➔ `repositories/` (Database operations)
+7. `repositories/` ➔ `models/` (Data structure enforcement)
+8. **Response** ➔ Sent back to Client  
+   ⚡ Includes real-time updates via **Sockets** (order status, availability, transactions)
 
+---
 
-1. **Client** ➔ `routes/` (URL check)
-2. `routes/` ➔ `middleware/` (Security/Auth check)
-3. `middleware/` ➔ `validators/` (Data validation check)
-4. `validators/` ➔ `controllers/` (Data reception)
-5. `controllers/` ➔ `services/` (Logic processing)
-6. `services/` ➔ `repositories/` (Database interaction)
-7. `repositories/` ➔ `models/` (Data structure)
-8. **Response** ➔ Sent back to Client (with a **Socket** emit if real-time).
+## 🌟 Core System Goal
 
-
+AgriFair aims to:
+- 🌾 Empower **farmers** with fair, direct market access  
+- 🛒 Give **buyers** transparent pricing and reliable supply  
+- 🚫 Eliminate **middlemen exploitation**  
+- ⚡ Provide **real-time, secure, and scalable transactions**
