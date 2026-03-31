@@ -1,0 +1,85 @@
+
+# 🏢 Centaim Backend Architecture (Layered MVC)
+
+Welcome to the **Centaim** Backend. This project utilizes a **4-Tier Layered MVC Architecture** designed for high security (**DevSpec**), real-time updates (**Sockets**), and enterprise scalability.
+
+
+## 📂 The Master Folder Structure
+
+This structure ensures a strict **Separation of Concerns**. No "Spaghetti Code" allowed!
+
+### 🏛️ Core Layers
+| Folder | Responsibility |
+| :--- | :--- |
+| **`routes/`** | The "API Map." Connects URLs to their specific Controllers. |
+| **`controllers/`** | The "Waiters." They handle HTTP requests/responses but contain **zero** logic. |
+| **`services/`** | The "Brain." Where all business rules, calculations, and blockchain logic live. |
+| **`repositories/`** | The "Librarian." The **only** folder allowed to touch the Database (CRUD). |
+| **`models/`** | The "Blueprints." Mongoose/Prisma schemas defining the data structure. |
+
+### 🛡️ Security & Operations (DevSpec)
+| Folder | Responsibility |
+| :--- | :--- |
+| **`validators/`** | **The Shield.** Uses Zod/Joi to block malicious data before it hits the logic. |
+| **`middleware/`** | Global guards (Auth, Rate Limiters, Error Handlers). |
+| **`errors/`** | Custom Error Classes for specific logging and professional API responses. |
+| **`logs/`** | **The Security Camera.** Stores audit trails and error logs. |
+
+### ⚡ Extensions & Utilities
+| Folder | Responsibility |
+| :--- | :--- |
+| **`sockets/`** | Real-time "Push" event handlers (Socket.io). |
+| **`jobs/`** | Background tasks (Cron jobs, scheduled reports). |
+| **`scripts/`** | One-time tools for seeding data or migrations. |
+| **`storage/`** | Local handling for uploads (Resumes, Profile Pictures). |
+| **`utils/`** | Reusable helpers (JWT, Bcrypt, Date formatters). |
+| **`configs/`** | Centralized connection setups (DB, Redis, Web3). |
+| **`tests/`** | Integration and Unit tests for the API. |
+
+---
+
+## 📦 Installation Guide
+
+Run these commands to set up the environment.
+
+### 1. Main Framework & Database
+```bash
+npm install express mongoose dotenv cors
+```
+
+### 2. Security Shield (Critical for DevSpec)
+```bash
+npm install helmet zod express-rate-limit jsonwebtoken bcryptjs
+```
+
+### 3. Real-Time & Performance
+```bash
+npm install socket.io redis
+```
+
+### 4. Logging & Utilities
+```bash
+npm install morgan winston
+```
+
+### 5. Developer Tools
+```bash
+npm install -D nodemon
+```
+
+---
+
+## 🔄 The "Golden" Request Flow
+
+
+
+1. **Client** ➔ `routes/` (URL check)
+2. `routes/` ➔ `middleware/` (Security/Auth check)
+3. `middleware/` ➔ `validators/` (Data validation check)
+4. `validators/` ➔ `controllers/` (Data reception)
+5. `controllers/` ➔ `services/` (Logic processing)
+6. `services/` ➔ `repositories/` (Database interaction)
+7. `repositories/` ➔ `models/` (Data structure)
+8. **Response** ➔ Sent back to Client (with a **Socket** emit if real-time).
+
+
