@@ -5,9 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "node --test"
+    "start": "node index.js",
+    "dev": "npx --yes nodemon index.js"
   },
   "keywords": [],
   "author": "",
