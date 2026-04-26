@@ -755,3 +755,9 @@
   .lp-footer-inner { flex-direction: column; gap: 0.5rem; text-align: center; }
   .lp-about-card-offset { margin-left: 0; }
 }
+
+/* ── Centered hero action buttons ── */
+.lp-hero-actions-centered {
+  justify-content: center;
+  text-align: center;
+}

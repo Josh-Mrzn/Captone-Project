@@ -101,13 +101,14 @@ export default function LandingPage() {
             A centralized platform for admins to oversee events, users, analytics,
             and mobile integrations — all in one place.
           </p>
-          <div className="lp-hero-actions">
+          {/* Buttons centered via lp-hero-actions-centered */}
+          <div className="lp-hero-actions lp-hero-actions-centered">
             <button className="lp-btn-primary" onClick={() => navigate('/login')}>
-              Get Started
+              Log In
               <span>→</span>
             </button>
             <button className="lp-btn-ghost" onClick={() => navigate('/register')}>
-              Request Access
+              Sign Up
             </button>
           </div>
         </div>
@@ -196,10 +197,11 @@ export default function LandingPage() {
             </button>
           </div>
           <div className="lp-about-visual animate-on-scroll">
+            {/* Changed: "Admin Portal" → "Seller's Portal" with updated description */}
             <div className="lp-about-card">
               <div className="lp-about-card-icon">🌱</div>
-              <h3>Admin Portal</h3>
-              <p>Full system control for super admins and event managers.</p>
+              <h3>Seller's Portal</h3>
+              <p>A dedicated space for sellers to manage listings, track orders, and monitor sales performance.</p>
             </div>
             <div className="lp-about-card lp-about-card-offset">
               <div className="lp-about-card-icon">📲</div>
@@ -215,12 +217,13 @@ export default function LandingPage() {
         <div className="lp-cta-inner animate-on-scroll">
           <h2>Ready to manage your fair?</h2>
           <p>Sign in with your admin credentials to get started.</p>
-          <div className="lp-hero-actions">
+          {/* Buttons centered */}
+          <div className="lp-hero-actions lp-hero-actions-centered">
             <button className="lp-btn-white" onClick={() => navigate('/login')}>
-              Sign In <span>→</span>
+              Log In <span>→</span>
             </button>
             <button className="lp-btn-outline-white" onClick={() => navigate('/register')}>
-              Register
+              Sign Up
             </button>
           </div>
         </div>
