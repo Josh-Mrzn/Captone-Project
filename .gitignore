@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# env files
+.env
+backend/.env
+frontend/.env
+
+# build
+dist/
+build/
+
+# logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# uploads (if any)
+backend/uploads/
+
+mobile/
