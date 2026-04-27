@@ -41,30 +41,26 @@ class SuperAdminService {
     return { message: 'User deleted' };
   }
 
-  async approveAdmin(approvalId, superAdminId) {
-    const approval = await SuperAdminRepository.updateApproval(approvalId, {
-      status: 'approved',
-      approvedBy: superAdminId,
-      approvedAt: new Date()
-    });
+async approveAdmin(userId, superAdminId) {
+  const user = await SuperAdminRepository.updateUser(userId, {
+    status: 'active'
+  });
 
-    // Use the adminId stored in the approval document
-    const user = await SuperAdminRepository.updateUser(approval.adminId, { status: 'active' });
+  if (!user) throw new Error("User not found");
 
-    await SuperAdminRepository.createAuditLog({
-      adminId: superAdminId,
-      action: 'APPROVE_ADMIN',
-      targetId: user._id,
-      details: `Admin ${user.email} (ID: ${user.userId}) approved`
-    });
+  await SuperAdminRepository.createAuditLog({
+    adminId: superAdminId,
+    action: 'ACTIVATE_USER',
+    targetId: user.userId,
+    details: `User ${user.email} moved from pending → active`
+  });
 
-    console.log(`Email sent to ${user.email}: Account Approved`);
-    return user;
-  }
+  return user;
+}
 
-  async getPendingApprovals() {
-    return SuperAdminRepository.findPendingApprovals();
-  }
+async getPendingApprovals() {
+  return SuperAdminRepository.findPendingApprovals();
+}
 
   async createUser(userData, adminId) {
     // 1. Get all users to find the highest integer ID

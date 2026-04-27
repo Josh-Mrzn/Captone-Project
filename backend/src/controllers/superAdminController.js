@@ -46,13 +46,19 @@ export const getPendingApprovals = async (req, res) => {
 
 export const approveAdmin = async (req, res) => {
   try {
-    const user = await SuperAdminService.approveAdmin(req.params.id, req.user.id);
-    res.json({ message: 'Admin approved and email sent', user });
+    const user = await SuperAdminService.approveAdmin(
+      req.params.id,
+      req.user.userId
+    );
+
+    res.json({
+      message: 'User activated successfully',
+      user
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 export const createUser = async (req, res) => {
   try {
     // Change req.user.id to req.user.userId

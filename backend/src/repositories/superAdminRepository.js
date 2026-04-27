@@ -32,9 +32,9 @@ class SuperAdminRepository {
     return User.findOneAndDelete(query);
   }
 
-  async findPendingApprovals() {
-    return AdminApproval.find({ status: 'pending' }).populate('adminId', 'name email');
-  }
+async findPendingApprovals() {
+  return User.find({ status: 'pending' }).select('-password');
+}
 
   async updateApproval(id, data) {
     return AdminApproval.findByIdAndUpdate(id, data, { new: true });
