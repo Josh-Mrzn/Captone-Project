@@ -1,60 +1,43 @@
-// src/models/Product.js
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    trim: true
-  },
-  description: {
-    type: String,
-    trim: true
-  },
-  category: {
-    type: String,
-    required: true,
-    enum: ['Grains & Rice', 'Premium Rice', 'Specialty Rice'],
-    default: 'Grains & Rice'
+    trim: true,
   },
   price: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
+  },
+  description: {
+    type: String,
+    trim: true,
   },
   stock: {
     type: Number,
     required: true,
+    min: 0,
     default: 0,
-    min: 0
   },
-  image: {
-    type: String,
-    default: null
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  status: {
-    type: String,
-    enum: ['In Stock', 'Low Stock', 'Out of Stock'],
-    default: 'In Stock'
+  updatedAt: {
+    type: Date,
+    default: Date.now,
   },
-  sku: {
-    type: String,
-    unique: true,
-    sparse: true
-  }
-}, {
-  timestamps: true
+  createdBy: {
+    type: Number, // Storing the integer userId
+    required: true,
+  },
 });
 
-// Middleware to update status based on stock
-productSchema.pre('save', function() {
-  if (this.stock === 0) {
-    this.status = 'Out of Stock';
-  } else if (this.stock < 50) {
-    this.status = 'Low Stock';
-  } else {
-    this.status = 'In Stock';
-  }
+productSchema.pre('save', async function() {
+  this.updatedAt = Date.now();
+  // ✅ No next() call needed because the function is async
 });
 
 const Product = mongoose.model('Product', productSchema);

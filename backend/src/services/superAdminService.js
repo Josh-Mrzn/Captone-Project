@@ -5,75 +5,60 @@ class SuperAdminService {
     return SuperAdminRepository.findAllUsers();
   }
 
-  // NOTE: 'dbId' is the MongoDB _id string from the URL
-  // 'adminId' is the req.user.userId from your JWT
-  async suspendUser(dbId, adminId) {
-    const user = await SuperAdminRepository.updateUser(dbId, { status: 'suspended' });
+  // --- SUSPEND USER ---
+  async suspendUser(idFromUrl, adminId) {
+    const user = await SuperAdminRepository.updateUser(idFromUrl, { status: 'suspended' });
+    if (!user) throw new Error("User not found");
+
     await SuperAdminRepository.createAuditLog({
       adminId, 
       action: 'SUSPEND_USER',
-      targetId: dbId,
+      targetId: user.userId, // ✅ Changed from dbId to integer userId
       details: `User ${user.email} (ID: ${user.userId}) suspended`
     });
     return user;
   }
 
-  async activateUser(dbId, adminId) {
-    const user = await SuperAdminRepository.updateUser(dbId, { status: 'active' });
+  // --- ACTIVATE / UNSUSPEND USER ---
+  async activateUser(idFromUrl, adminId) {
+    const user = await SuperAdminRepository.updateUser(idFromUrl, { status: 'active' });
+    if (!user) throw new Error("User not found");
+
     await SuperAdminRepository.createAuditLog({
       adminId,
       action: 'ACTIVATE_USER',
-      targetId: dbId,
+      targetId: user.userId, // ✅ Changed from dbId to integer userId
       details: `User ${user.email} (ID: ${user.userId}) activated`
     });
     return user;
   }
 
-  async deleteUser(dbId, adminId) {
-    const user = await SuperAdminRepository.findUserById(dbId);
-    await SuperAdminRepository.deleteUser(dbId);
+  // --- DELETE USER ---
+  async deleteUser(idFromUrl, adminId) {
+    // We find the user first to get their integer ID for the log before they are gone
+    const user = await SuperAdminRepository.findUserById(idFromUrl);
+    if (!user) throw new Error("User not found");
+
+    await SuperAdminRepository.deleteUser(idFromUrl);
+
     await SuperAdminRepository.createAuditLog({
       adminId,
       action: 'DELETE_USER',
-      targetId: dbId,
+      targetId: user.userId, // ✅ Use integer userId
       details: `User ${user.email} (ID: ${user.userId}) deleted`
     });
-    return { message: 'User deleted' };
+    return { message: 'User deleted successfully' };
   }
 
-async approveAdmin(userId, superAdminId) {
-  const user = await SuperAdminRepository.updateUser(userId, {
-    status: 'active'
-  });
-
-  if (!user) throw new Error("User not found");
-
-  await SuperAdminRepository.createAuditLog({
-    adminId: superAdminId,
-    action: 'ACTIVATE_USER',
-    targetId: user.userId,
-    details: `User ${user.email} moved from pending → active`
-  });
-
-  return user;
-}
-
-async getPendingApprovals() {
-  return SuperAdminRepository.findPendingApprovals();
-}
-
+  // --- CREATE USER ---
   async createUser(userData, adminId) {
-    // 1. Get all users to find the highest integer ID
     const users = await SuperAdminRepository.findAllUsers();
-    
-    // 2. Calculate next integer ID
     const lastUser = users
       .filter(u => typeof u.userId === 'number')
       .sort((a, b) => b.userId - a.userId)[0];
     
     const nextId = lastUser ? lastUser.userId + 1 : 1;
 
-    // 3. Create user with integer userId and active status
     const newUser = await SuperAdminRepository.createUser({
       ...userData,
       userId: nextId,
@@ -83,47 +68,46 @@ async getPendingApprovals() {
     await SuperAdminRepository.createAuditLog({
       adminId, 
       action: 'CREATE_USER',
-      targetId: newUser._id,
+      targetId: newUser.userId, // ✅ Use the new integer ID
       details: `User ${newUser.email} created with ID ${nextId}`
     });
 
     return newUser;
   }
 
-async updateUser(idFromUrl, updateData, adminId) {
-  // 1. Update the user via the repository
-  const user = await SuperAdminRepository.updateUser(idFromUrl, updateData);
-  
-  if (!user) throw new Error("User not found");
+  // --- UPDATE USER ---
+  async updateUser(idFromUrl, updateData, adminId) {
+    const user = await SuperAdminRepository.updateUser(idFromUrl, updateData);
+    if (!user) throw new Error("User not found");
 
-  // 2. Log using the simple ID
-  await SuperAdminRepository.createAuditLog({
-    adminId: adminId, 
-    action: 'UPDATE_USER',
-    targetId: user.userId, // <--- Use the integer ID here
-    details: `Updated details for ${user.email}`
-  });
+    await SuperAdminRepository.createAuditLog({
+      adminId, 
+      action: 'UPDATE_USER',
+      targetId: user.userId, // ✅ Use integer userId
+      details: `Updated details for ${user.email}`
+    });
 
-  return user;
+    return user;
+  }
+
+  // --- ADMIN APPROVALS ---
+  async approveAdmin(idFromUrl, superAdminId) {
+    const user = await SuperAdminRepository.updateUser(idFromUrl, { status: 'active' });
+    if (!user) throw new Error("User not found");
+
+    await SuperAdminRepository.createAuditLog({
+      adminId: superAdminId,
+      action: 'ACTIVATE_USER',
+      targetId: user.userId,
+      details: `User ${user.email} moved from pending → active`
+    });
+
+    return user;
+  }
+
+  async getPendingApprovals() {
+    return SuperAdminRepository.findPendingApprovals();
+  }
 }
-async activateUser(idFromUrl, adminId) {
-  // Find and update the user back to active status
-  const user = await SuperAdminRepository.updateUser(idFromUrl, { status: 'active' });
-
-  if (!user) throw new Error("User not found");
-
-  // Log the activation
-  await SuperAdminRepository.createAuditLog({
-    adminId: adminId,      // This is the Number from your JWT
-    action: 'ACTIVATE_USER',
-    targetId: user.userId, // This is the Number of the target user
-    details: `User ${user.email} was activated (unsuspended) by admin ${adminId}`
-  });
-
-  return user;
-}
-}
-
-
 
 export default new SuperAdminService();
