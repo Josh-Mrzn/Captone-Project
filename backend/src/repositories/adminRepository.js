@@ -1,50 +1,43 @@
-import Product from '../models/Product.js'; // Import your actual Mongoose model
+import Product from '../models/Product.js';
 
-class AdminRepository {
-  // We no longer need the constructor with this.products = []
-  
-async addProduct(productData, adminId) {
+export const addProduct = async (productData, adminId) => {
+  // Find the last product to determine the next custom integer ID
   const lastProduct = await Product.findOne().sort({ id: -1 });
   const nextId = lastProduct ? lastProduct.id + 1 : 1;
 
   return await Product.create({
     ...productData,
     id: nextId,
-    createdBy: adminId // Store who made it
+    createdBy: adminId
   });
-}
+};
 
-async getProductsByAdmin(adminId) {
-  // Returns only products created by this specific admin
+export const getProductsByAdmin = async (adminId) => {
   return await Product.find({ createdBy: adminId });
-}
-  async getProductById(id) {
-    // Search by your custom integer id
-    return await Product.findOne({ id: parseInt(id) });
-  }
+};
 
-  async updateProduct(id, updatedFields) {
-    // Update in MongoDB
-    return await Product.findOneAndUpdate(
-      { id: parseInt(id) },
-      updatedFields,
-      { new: true }
-    );
-  }
+export const getProductById = async (id) => {
+  return await Product.findOne({ id: parseInt(id) });
+};
 
-  async deleteProduct(id) {
-    const result = await Product.deleteOne({ id: parseInt(id) });
-    return result.deletedCount > 0;
-  }
+export const updateProduct = async (id, updatedFields) => {
+  return await Product.findOneAndUpdate(
+    { id: parseInt(id) },
+    updatedFields,
+    { new: true }
+  );
+};
 
-  async getAllProducts() {
-    return await Product.find();
-  }
+export const deleteProduct = async (id) => {
+  const result = await Product.deleteOne({ id: parseInt(id) });
+  return result.deletedCount > 0;
+};
 
-  async getOrders() {
-    // You'll eventually import an Order model here
-    return []; 
-  }
-}
+export const getAllProducts = async () => {
+  return await Product.find();
+};
 
-export default AdminRepository;
+export const getOrders = async () => {
+  // Logic for orders will go here
+  return [];
+};
