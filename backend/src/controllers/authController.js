@@ -1,6 +1,6 @@
 // src/controllers/authController.js
 import { authService } from '../services/authService.js';
-import { getIO } from '../sockets/adminSocket.js';
+import { getIo } from '../sockets/socket.js';
 
 export const register = async (req, res, next) => {
   try {
