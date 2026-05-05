@@ -42,6 +42,60 @@ const STATS = [
   { value: '24/7', label: 'Support' },
 ];
 
+// Footer link groups (multi-column layout, similar to the Smart reference)
+const FOOTER_GROUPS = [
+  {
+    heading: 'Platform',
+    links: [
+      { label: 'Features', href: '#features' },
+      { label: 'About', href: '#about' },
+      { label: 'Mobile App', href: '#about' },
+      { label: 'Pricing', href: '#' },
+      { label: 'What\u2019s New', href: '#' },
+    ],
+  },
+  {
+    heading: 'For Sellers',
+    links: [
+      { label: 'Seller Dashboard', href: '/login' },
+      { label: 'List a Product', href: '/login' },
+      { label: 'Order Management', href: '/login' },
+      { label: 'Analytics', href: '/login' },
+      { label: 'Become a Seller', href: '/register' },
+    ],
+  },
+  {
+    heading: 'For Buyers',
+    links: [
+      { label: 'Marketplace', href: '#' },
+      { label: 'Track Order', href: '#' },
+      { label: 'Payment Methods', href: '#' },
+      { label: 'Delivery Areas', href: '#' },
+      { label: 'Buyer Support', href: '#' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { label: 'About Us', href: '#about' },
+      { label: 'Contact', href: '#' },
+      { label: 'Careers', href: '#' },
+      { label: 'Press Kit', href: '#' },
+      { label: 'Partnerships', href: '#' },
+    ],
+  },
+  {
+    heading: 'Resources',
+    links: [
+      { label: 'Help Center', href: '#' },
+      { label: 'Privacy Policy', href: '#' },
+      { label: 'Terms of Use', href: '#' },
+      { label: 'Cookie Policy', href: '#' },
+      { label: 'Sitemap', href: '#' },
+    ],
+  },
+];
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const heroRef = useRef(null);
@@ -62,6 +116,14 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
+  const handleFooterLink = (href) => (e) => {
+    if (href.startsWith('/')) {
+      e.preventDefault();
+      navigate(href);
+    }
+    // Hash links (#about, #features, #) fall through to default browser behavior
+  };
+
   return (
     <div className="lp-root">
       {/* NAV */}
@@ -81,14 +143,14 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="lp-hero" ref={heroRef}>
+      {/* HERO — simplified: no dashboard window mock, no redundant Log In/Sign Up buttons */}
+      <section className="lp-hero lp-hero-simple" ref={heroRef}>
         <div className="lp-hero-bg">
           <div className="lp-orb lp-orb1" />
           <div className="lp-orb lp-orb2" />
           <div className="lp-orb lp-orb3" />
         </div>
-        <div className="lp-hero-content">
+        <div className="lp-hero-content lp-hero-content-centered">
           <div className="lp-hero-badge">Admin Management System</div>
           <h1 className="lp-hero-title">
             Manage Your
@@ -101,41 +163,6 @@ export default function LandingPage() {
             A centralized platform for admins to oversee events, users, analytics,
             and mobile integrations — all in one place.
           </p>
-          {/* Buttons centered via lp-hero-actions-centered */}
-          <div className="lp-hero-actions lp-hero-actions-centered">
-            <button className="lp-btn-primary" onClick={() => navigate('/login')}>
-              Log In
-              <span>→</span>
-            </button>
-            <button className="lp-btn-ghost" onClick={() => navigate('/register')}>
-              Sign Up
-            </button>
-          </div>
-        </div>
-        <div className="lp-hero-visual">
-          <div className="lp-dashboard-mock">
-            <div className="lp-mock-header">
-              <span className="lp-mock-dot red" />
-              <span className="lp-mock-dot yellow" />
-              <span className="lp-mock-dot green" />
-              <span className="lp-mock-title">Dashboard</span>
-            </div>
-            <div className="lp-mock-body">
-              <div className="lp-mock-stat-row">
-                {['Users', 'Events', 'Revenue'].map((s, i) => (
-                  <div className="lp-mock-stat" key={s}>
-                    <div className="lp-mock-stat-bar" style={{ height: `${40 + i * 18}px` }} />
-                    <span>{s}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="lp-mock-lines">
-                {[...Array(4)].map((_, i) => (
-                  <div className="lp-mock-line" key={i} style={{ width: `${85 - i * 15}%` }} />
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -177,36 +204,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ABOUT */}
+      {/* ABOUT — text on left, QR placeholder on right (replaces stacked admin-cards visual) */}
       <section className="lp-about" id="about">
         <div className="lp-section-inner lp-about-inner">
           <div className="lp-about-text animate-on-scroll">
             <span className="lp-section-badge">About</span>
-            <h2 className="lp-section-title">Built for AgriTech Admins</h2>
+            <h2 className="lp-section-title">Get the AgriFair Mobile App</h2>
             <p>
-              AgriFair Admin is a capstone project designed to streamline the management
-              of agricultural fairs and events. The platform bridges the gap between
-              field operations (via mobile) and administrative oversight (via web).
+              AgriFair bridges the gap between field operations and administrative oversight.
+              Scan the QR code to download the companion mobile app and start managing
+              your fair on the go.
             </p>
-            <p>
-              With role-based access, only authorized administrators can log in, ensuring
-              the integrity of your event data.
-            </p>
-            <button className="lp-btn-primary" onClick={() => navigate('/login')}>
-              Sign In Now <span>→</span>
-            </button>
+            {/* "Sign In Now →" button removed — redundant with the nav CTA */}
           </div>
+
           <div className="lp-about-visual animate-on-scroll">
-            {/* Changed: "Admin Portal" → "Seller's Portal" with updated description */}
-            <div className="lp-about-card">
-              <div className="lp-about-card-icon">🌱</div>
-              <h3>Seller's Portal</h3>
-              <p>A dedicated space for sellers to manage listings, track orders, and monitor sales performance.</p>
-            </div>
-            <div className="lp-about-card lp-about-card-offset">
-              <div className="lp-about-card-icon">📲</div>
-              <h3>Mobile Companion</h3>
-              <p>Field officers use the mobile app, synced in real time.</p>
+            <div className="lp-qr-card">
+              <div className="lp-qr-phone">
+                <div className="lp-qr-phone-screen">
+                  <div className="lp-qr-phone-icon">🌾</div>
+                  <div className="lp-qr-phone-label">AGRIFAIR</div>
+                </div>
+              </div>
+
+              <div className="lp-qr-right">
+                <h3 className="lp-qr-heading">Download AgriFair Now!</h3>
+                <div className="lp-qr-code" aria-label="QR code placeholder">
+                  {/* Pure-CSS placeholder QR (decorative). Replace with a real QR image when ready. */}
+                  <div className="lp-qr-code-pattern">
+                    {Array.from({ length: 49 }).map((_, i) => (
+                      <span key={i} className={`lp-qr-cell ${i % 3 === 0 || i % 5 === 0 ? 'on' : ''}`} />
+                    ))}
+                  </div>
+                  <div className="lp-qr-corner lp-qr-corner-tl" />
+                  <div className="lp-qr-corner lp-qr-corner-tr" />
+                  <div className="lp-qr-corner lp-qr-corner-bl" />
+                  <div className="lp-qr-corner lp-qr-corner-br" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -217,7 +252,6 @@ export default function LandingPage() {
         <div className="lp-cta-inner animate-on-scroll">
           <h2>Ready to manage your fair?</h2>
           <p>Sign in with your admin credentials to get started.</p>
-          {/* Buttons centered */}
           <div className="lp-hero-actions lp-hero-actions-centered">
             <button className="lp-btn-white" onClick={() => navigate('/login')}>
               Log In <span>→</span>
@@ -229,14 +263,77 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* FOOTER — expanded with multiple link columns (inspired by reference image) */}
       <footer className="lp-footer">
-        <div className="lp-footer-inner">
-          <div className="lp-logo">
-            <span className="lp-logo-icon">🌿</span>
-            <span className="lp-logo-text">AgriFair</span>
+        <div className="lp-footer-top">
+          <div className="lp-footer-inner">
+            {/* Left: brand + tagline + socials */}
+            <div className="lp-footer-brand">
+              <div className="lp-logo">
+                <span className="lp-logo-icon">🌿</span>
+                <span className="lp-logo-text">AgriFair</span>
+              </div>
+              <p className="lp-footer-tagline">
+                AgriFair connects farmers, traders, and administrators in one trusted
+                marketplace for the agricultural community.
+              </p>
+              <div className="lp-footer-socials" aria-label="Social media links">
+                <a href="#" aria-label="Facebook"   className="lp-footer-social">f</a>
+                <a href="#" aria-label="X / Twitter" className="lp-footer-social">𝕏</a>
+                <a href="#" aria-label="Instagram"  className="lp-footer-social">◎</a>
+                <a href="#" aria-label="YouTube"    className="lp-footer-social">▶</a>
+                <a href="#" aria-label="LinkedIn"   className="lp-footer-social">in</a>
+                <a href="#" aria-label="TikTok"     className="lp-footer-social">♪</a>
+              </div>
+            </div>
+
+            {/* Right: link columns */}
+            <div className="lp-footer-grid">
+              {FOOTER_GROUPS.map((group) => (
+                <div className="lp-footer-col" key={group.heading}>
+                  <h4 className="lp-footer-heading">{group.heading}</h4>
+                  <ul className="lp-footer-list">
+                    {group.links.map((link) => (
+                      <li key={link.label}>
+                        <a
+                          href={link.href}
+                          onClick={handleFooterLink(link.href)}
+                          className="lp-footer-link"
+                        >
+                          {link.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="lp-footer-copy">© 2025 AgriFair. Capstone Project. All rights reserved.</p>
+        </div>
+
+        <div className="lp-footer-mid">
+          <div className="lp-footer-mid-inner">
+            <a href="#" className="lp-footer-mid-link">Marketplace</a>
+            <span className="lp-footer-mid-sep">|</span>
+            <a href="#" className="lp-footer-mid-link">Blog</a>
+            <span className="lp-footer-mid-sep">|</span>
+            <a href="#" className="lp-footer-mid-link">Events &amp; Fairs</a>
+          </div>
+        </div>
+
+        <div className="lp-footer-bottom">
+          <div className="lp-footer-bottom-inner">
+            <p className="lp-footer-copy">© 2025 AgriFair. Capstone Project. All rights reserved.</p>
+            <div className="lp-footer-legal">
+              <a href="#">Terms of Use</a>
+              <a href="#">Privacy Policy</a>
+              <a href="#">Careers</a>
+              <a href="#">About Us</a>
+              <a href="#">Contact Us</a>
+              <a href="#">Our Network</a>
+              <a href="#">Store Locator</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

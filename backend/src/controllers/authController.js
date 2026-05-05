@@ -23,15 +23,20 @@ export const login = async (req, res) => {
     const result = await authService.login(req.body);
 
     // === WebSocket Real-time Feed ===
-    const io = getIO();
-    if (io) {
-      io.emit('new-login', {
-        userId: result.user.id,
-        name: result.user.name,
-        email: result.user.email,
-        role: result.user.role,
-        timestamp: new Date().toISOString()
-      });
+    try {
+      const io = getIo();
+      if (io) {
+        io.emit('new-login', {
+          userId: result.user.id,
+          name: result.user.name,
+          email: result.user.email,
+          role: result.user.role,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (socketErr) {
+      // Don't fail login if socket isn't initialized
+      console.warn('Socket emit skipped:', socketErr.message);
     }
 
     return res.status(200).json({

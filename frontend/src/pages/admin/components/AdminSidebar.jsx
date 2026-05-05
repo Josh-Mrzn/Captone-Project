@@ -1,16 +1,26 @@
 import React from 'react';
 
-const TABS = ['Dashboard', 'Product List', 'Reports', 'Messages', 'Settings'];
+const TABS = ['Dashboard', 'Product List', 'Orders', 'Analytics', 'Reports', 'Messages', 'Settings'];
 const TAB_ICONS = {
-  Dashboard: '🏠',
+  Dashboard:      '🏠',
   'Product List': '📦',
-  Reports: '📊',
-  Messages: '💬',
-  Settings: '⚙️',
+  Orders:         '🛒',
+  Analytics:      '📈',
+  Reports:        '📊',
+  Messages:       '💬',
+  Settings:       '⚙️',
+};
+
+// Optional badges (hardcoded for now — replace with real data when backend is wired)
+const TAB_BADGES = {
+  Orders:   3,
+  Messages: 4,
 };
 
 export default function AdminSidebar({ user, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, onLogoutClick }) {
   const initials = user.email ? user.email.slice(0, 2).toUpperCase() : 'AD';
+  const displayName = user.name || user.email || 'admin@agrifair.ph';
+  const displayRole = user.role || 'Admin';
 
   return (
     <>
@@ -31,7 +41,10 @@ export default function AdminSidebar({ user, activeTab, setActiveTab, sidebarOpe
               onClick={() => { setActiveTab(tab); setSidebarOpen(false); }}
             >
               <span className="ap-nav-icon">{TAB_ICONS[tab]}</span>
-              {tab}
+              <span className="ap-nav-label">{tab}</span>
+              {TAB_BADGES[tab] && (
+                <span className="ap-nav-badge">{TAB_BADGES[tab]}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -39,9 +52,9 @@ export default function AdminSidebar({ user, activeTab, setActiveTab, sidebarOpe
         <div className="ap-sidebar-foot">
           <div className="ap-user-chip">
             <div className="ap-avatar">{initials}</div>
-            <div>
-              <div className="ap-user-email">{user.email || 'admin@agrifair.ph'}</div>
-              <div className="ap-user-role">{user.role || 'Admin'}</div>
+            <div className="ap-user-chip-text">
+              <div className="ap-user-email">{displayName}</div>
+              <div className="ap-user-role">{displayRole}</div>
             </div>
           </div>
           <button className="ap-logout-btn" onClick={onLogoutClick}>🚪 Logout</button>

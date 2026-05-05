@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // Pages
@@ -24,7 +23,7 @@ function ProtectedRoute({ children, role }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (role && user.role !== role) {
+  if (role && (user.role || '').toLowerCase() !== role.toLowerCase()) {
     return <Navigate to="/" replace />;
   }
 
@@ -33,9 +32,13 @@ function ProtectedRoute({ children, role }) {
 
 // 🔓 Public only route
 function PublicOnlyRoute({ children }) {
-  const { token } = getAuth();
+  const { token, user } = getAuth();
 
-  return token ? <Navigate to="/admin" replace /> : children;
+  if (token && user) {
+    const role = (user.role || '').toLowerCase();
+    return <Navigate to={role === 'superadmin' ? '/superadmin' : '/admin'} replace />;
+  }
+  return children;
 }
 
 export default function App() {

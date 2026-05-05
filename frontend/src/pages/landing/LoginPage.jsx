@@ -85,8 +85,12 @@ export default function LoginPage() {
       // 🔥 SUCCESS ALERT
       showAlert('success', 'Login successful! Redirecting...');
 
+      // Route by role returned from backend
+      const role = (res.data.user?.role || '').toLowerCase();
+      const target = role === 'superadmin' ? '/superadmin' : '/admin';
+
       setTimeout(() => {
-        navigate('/admin');
+        navigate(target);
       }, 1000);
 
     } catch (err) {

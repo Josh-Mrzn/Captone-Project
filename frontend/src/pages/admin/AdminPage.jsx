@@ -4,16 +4,18 @@ import './AdminPage.css';
 
 // ── Components ─────────────────────────────────────────
 import AdminSidebar from './components/AdminSidebar';
+import NotificationCenter from './components/NotificationCenter';
 
 // ── Tabs ───────────────────────────────────────────────
 import DashboardTab   from './tabs/DashboardTab';
 import ProductListTab from './tabs/ProductListTab';
+import OrdersTab      from './tabs/OrdersTab';
+import AnalyticsTab   from './tabs/AnalyticsTab';
 import ReportsTab     from './tabs/ReportsTab';
 import MessagesTab    from './tabs/MessagesTab';
 import SettingsTab    from './tabs/SettingsTab';
 
-// ── Tab configuration (Events & User Management removed — Super Admin only) ──
-const TABS = ['Dashboard', 'Product List', 'Reports', 'Messages', 'Settings'];
+import { logoutUser, clearSession } from '../../services/authApi';
 
 export default function AdminPage({ onLogout }) {
   const navigate = useNavigate();
@@ -23,11 +25,21 @@ export default function AdminPage({ onLogout }) {
   const [showLogout, setShowLogout]   = useState(false);
 
   useEffect(() => {
-    const s = sessionStorage.getItem('userSession');
-    if (s) setUser(JSON.parse(s));
+    // Use the canonical 'user' key (set by LoginPage). Fall back to legacy
+    // 'userSession' key for older sessions.
+    const u = sessionStorage.getItem('user') || sessionStorage.getItem('userSession');
+    if (u) {
+      try { setUser(JSON.parse(u)); } catch { /* ignore */ }
+    }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // Backend logout is a courtesy; even if it fails we still wipe the client.
+    }
+    clearSession();
     sessionStorage.removeItem('isLoggedIn');
     sessionStorage.removeItem('userSession');
     if (onLogout) onLogout();
@@ -37,8 +49,10 @@ export default function AdminPage({ onLogout }) {
   // ── Tab renderer ──────────────────────────────────────
   const renderTab = () => {
     switch (activeTab) {
-      case 'Dashboard':    return <DashboardTab user={user} />;
+      case 'Dashboard':    return <DashboardTab user={user} setActiveTab={setActiveTab} />;
       case 'Product List': return <ProductListTab />;
+      case 'Orders':       return <OrdersTab />;
+      case 'Analytics':    return <AnalyticsTab />;
       case 'Reports':      return <ReportsTab />;
       case 'Messages':     return <MessagesTab />;
       case 'Settings':     return <SettingsTab />;
@@ -63,6 +77,14 @@ export default function AdminPage({ onLogout }) {
         <header className="ap-topbar">
           <button className="ap-menu-btn" onClick={() => setSidebarOpen(true)}>☰</button>
           <div className="ap-topbar-title">{activeTab}</div>
+          <div className="ap-topbar-right">
+            <NotificationCenter />
+            <div className="ap-topbar-user">
+              <div className="ap-topbar-avatar">
+                {(user.email || 'AD').slice(0, 2).toUpperCase()}
+              </div>
+            </div>
+          </div>
         </header>
         <div className="ap-body">{renderTab()}</div>
       </main>
