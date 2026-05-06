@@ -1,0 +1,185 @@
+/* ============================================================
+   SUPER ADMIN PAGE — AgriFair
+   Amber / gold theme — visually distinct from the green Admin panel.
+   All layout is inherited from AdminPage.css; this file only
+   overrides colour tokens and adds super-admin-specific components.
+   ============================================================ */
+
+/* ── Colour overrides on the root ── */
+.sa-root {
+  --sa-amber:      #b45309;
+  --sa-amber-dark: #92400e;
+  --sa-amber-mid:  #d97706;
+  --sa-amber-light:#fef3c7;
+  --sa-amber-pale: #fffbeb;
+  --sa-gold:       #fbbf24;
+}
+
+/* ── Sidebar: amber accent ── */
+.sa-sidebar { background: #1c1408; }
+.sa-sidebar .ap-nav-item.active { background: var(--sa-amber); }
+.sa-sidebar .ap-nav-item:hover  { background: rgba(251,191,36,0.1); color: var(--sa-gold); }
+.sa-sidebar .ap-logo-text       { color: rgba(255,255,255,0.92); }
+
+.sa-sidebar-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sa-gold);
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.2);
+  padding: 0.15rem 0.55rem;
+  border-radius: 100px;
+  margin-left: auto;
+}
+
+.sa-avatar        { background: var(--sa-amber) !important; }
+.sa-role-label    { color: var(--sa-gold) !important; }
+
+/* ── Topbar: subtle amber indicator ── */
+.sa-topbar {
+  border-bottom-color: rgba(180, 83, 9, 0.25);
+  background: #fffbeb;
+}
+
+.sa-topbar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--sa-amber-light);
+  color: var(--sa-amber);
+  border: 1px solid rgba(180,83,9,0.2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.75rem;
+  border-radius: 100px;
+}
+
+.sa-topbar-avatar { background: var(--sa-amber) !important; }
+
+/* ── Alert banner (pending approvals) ── */
+.sa-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--sa-amber-light);
+  border: 1px solid rgba(180,83,9,0.25);
+  border-left: 4px solid var(--sa-amber);
+  color: var(--sa-amber-dark);
+  padding: 0.85rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.sa-alert-link {
+  margin-left: auto;
+  background: var(--sa-amber);
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.sa-alert-link:hover { background: var(--sa-amber-dark); }
+
+/* ── View all link in panel headers ── */
+.sa-view-all {
+  background: transparent;
+  border: none;
+  color: var(--sa-amber);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sa-view-all:hover { text-decoration: underline; }
+
+/* ── Role pills ── */
+.ap-role-pill {
+  display: inline-block;
+  padding: 0.18rem 0.6rem;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.role-user       { background: #e0e7ff; color: #3730a3; }
+.role-admin      { background: #dcfce7; color: #166534; }
+.role-superadmin { background: var(--sa-amber-light); color: var(--sa-amber-dark); }
+
+/* ── Admin approval list ── */
+.sa-approval-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sa-approval-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--sa-amber-pale);
+  border: 1px solid rgba(180,83,9,0.2);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.sa-approval-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--sa-amber);
+  color: #fff;
+  font-family: 'Fraunces', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sa-approval-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.sa-approval-info strong { font-size: 0.92rem; color: #1c1408; }
+.sa-approval-info span   { font-size: 0.8rem;  color: #6b7280; }
+.sa-approval-joined       { font-size: 0.74rem; color: #9ca3af; }
+
+/* ── Panel header h3 override for amber tone ── */
+.sa-root .ap-panel-header h3 { color: #1c1408; }
+
+/* ── Stat cards: amber accent on hover ── */
+.sa-root .ap-stat-card:hover { border-color: rgba(180,83,9,0.25); }
+.sa-root .ap-stat-value-rich { color: #1c1408; }
+
+/* ── Buttons: amber primary ── */
+.sa-root .ap-btn-primary {
+  background: var(--sa-amber);
+  box-shadow: 0 2px 8px rgba(180,83,9,0.25);
+}
+.sa-root .ap-btn-primary:hover { background: var(--sa-amber-dark); }
+
+/* ── Nav badge: amber ── */
+.sa-root .ap-nav-badge { background: var(--sa-gold); color: #1c1408; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sa-sidebar-badge { display: none; }
+}
