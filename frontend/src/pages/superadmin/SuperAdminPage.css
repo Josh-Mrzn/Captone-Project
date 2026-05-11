@@ -21,6 +21,20 @@
 .sa-sidebar .ap-nav-item:hover  { background: rgba(251,191,36,0.1); color: var(--sa-gold); }
 .sa-sidebar .ap-logo-text       { color: rgba(255,255,255,0.92); }
 
+.sa-sidebar-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.sa-sidebar-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .sa-sidebar-badge {
   font-size: 0.62rem;
   font-weight: 700;
@@ -31,7 +45,8 @@
   border: 1px solid rgba(251,191,36,0.2);
   padding: 0.15rem 0.55rem;
   border-radius: 100px;
-  margin-left: auto;
+  margin-left: 0;
+  align-self: flex-start;
 }
 
 .sa-avatar        { background: var(--sa-amber) !important; }

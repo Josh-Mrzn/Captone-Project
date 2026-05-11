@@ -55,12 +55,11 @@ const ACTIVITY_ICON = {
 };
 
 const TABS = [
-  { key: 'Overview',            icon: '🛡️', label: 'Overview' },
-  { key: 'Users',               icon: '👥', label: 'Users' },
-  { key: 'Admin Accounts',      icon: '👤', label: 'Admin Accounts' },
-  { key: 'System Logs',         icon: '🗂️', label: 'System Logs' },
-  { key: 'Platform Analytics',  icon: '📊', label: 'Platform Analytics' },
-  { key: 'Settings',            icon: '⚙️', label: 'Settings' },
+  { key: 'Overview',       icon: '🛡️', label: 'Overview' },
+  { key: 'Users',          icon: '👥', label: 'Users' },
+  { key: 'Admin Accounts', icon: '👤', label: 'Admin Accounts' },
+  { key: 'System Logs',    icon: '🗂️', label: 'System Logs' },
+  { key: 'Settings',       icon: '⚙️', label: 'Settings' },
 ];
 
 const fmtDate = (iso) => new Date(iso).toLocaleString('en-PH', {
@@ -384,54 +383,6 @@ export default function SuperAdminPage({ onLogout }) {
         </div>
       );
 
-      // ── PLATFORM ANALYTICS ─────────────────────────────────────────────
-      case 'Platform Analytics': return (
-        <div className="ap-tab-content">
-          <div className="ap-page-header">
-            <div><h2>Platform Analytics</h2><span className="ap-page-sub">Platform-wide metrics across all sellers and buyers</span></div>
-          </div>
-          <div className="ap-stats-grid">
-            {[
-              { icon:'💰', label:'Platform GMV',        value:'₱1.24M',  delta:'Gross merchandise value, all time' },
-              { icon:'📦', label:'Total Products',       value:'184',     delta:'Across all seller accounts' },
-              { icon:'🛒', label:'Total Orders',         value:'2,841',   delta:'Since platform launch' },
-              { icon:'📈', label:'Avg Order Value',      value:'₱2,380',  delta:'Up 8.4% vs last month' },
-            ].map(s => (
-              <div className="ap-stat-card ap-stat-rich" key={s.label}>
-                <div className="ap-stat-card-top"><div className="ap-stat-icon">{s.icon}</div></div>
-                <div className="ap-stat-label">{s.label}</div>
-                <div className="ap-stat-value-rich">{s.value}</div>
-                <div className="ap-stat-delta">{s.delta}</div>
-              </div>
-            ))}
-          </div>
-          <div className="ap-panel">
-            <div className="ap-panel-header"><h3>Top Selling Varieties — Platform Wide</h3></div>
-            <div className="ap-table-wrap">
-              <table className="ap-table">
-                <thead><tr><th>Variety</th><th>Total Volume (kg)</th><th>Revenue Share</th><th>Sellers</th></tr></thead>
-                <tbody>
-                  {[
-                    ['Jasmine Rice', '42,800', '38%', '24'],
-                    ['Sinandomeng', '28,400', '26%', '18'],
-                    ['Brown Rice',   '15,200', '14%', '12'],
-                    ['Dinorado',     '10,900', '10%', '9'],
-                    ['Black Rice',    '7,600',  '7%', '5'],
-                  ].map(([v,vol,share,sellers]) => (
-                    <tr key={v}>
-                      <td className="ap-td-name">{v}</td>
-                      <td>{vol}</td>
-                      <td><span className="ap-status-pill tone-green">{share}</span></td>
-                      <td>{sellers}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      );
-
       // ── SETTINGS ──────────────────────────────────────────────────────
       case 'Settings': return (
         <div className="ap-tab-content">
@@ -474,13 +425,15 @@ export default function SuperAdminPage({ onLogout }) {
     <div className="ap-root sa-root">
       {/* ── SIDEBAR ── */}
       <aside className={`ap-sidebar sa-sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="ap-sidebar-header">
-          <div className="ap-logo">
-            <span>🌿</span>
-            <span className="ap-logo-text">AgriFair</span>
+        <div className="ap-sidebar-header sa-sidebar-header">
+          <div className="sa-sidebar-header-top">
+            <div className="ap-logo">
+              <span>🌿</span>
+              <span className="ap-logo-text">AgriFair</span>
+            </div>
+            <button className="ap-sidebar-close" onClick={() => setSidebarOpen(false)}>✕</button>
           </div>
-          <div className="sa-sidebar-badge">Super Admin</div>
-          <button className="ap-sidebar-close" onClick={() => setSidebarOpen(false)}>✕</button>
+          <div className="sa-sidebar-badge">🛡️ Super Admin</div>
         </div>
 
         <nav className="ap-nav">
@@ -520,9 +473,7 @@ export default function SuperAdminPage({ onLogout }) {
           <div className="ap-topbar-title">{activeTab}</div>
           <div className="ap-topbar-right">
             <span className="sa-topbar-badge">🛡️ Super Admin</span>
-            <div className="ap-topbar-user">
-              <div className="ap-topbar-avatar sa-topbar-avatar">{initials}</div>
-            </div>
+            <span className="ap-topbar-greeting">Hello, {user.name || (user.email ? user.email.split('@')[0] : 'Super Admin')}.</span>
           </div>
         </header>
         <div className="ap-body">{renderTab()}</div>

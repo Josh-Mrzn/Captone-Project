@@ -1,23 +1,21 @@
 import React from 'react';
 
-const TABS = ['Dashboard', 'Product List', 'Orders', 'Analytics', 'Reports', 'Messages', 'Settings'];
+const TABS = ['Dashboard', 'Product List', 'Orders', 'Analytics', 'Messages', 'Settings'];
 const TAB_ICONS = {
   Dashboard:      '🏠',
   'Product List': '📦',
   Orders:         '🛒',
   Analytics:      '📈',
-  Reports:        '📊',
   Messages:       '💬',
   Settings:       '⚙️',
 };
 
-// Optional badges (hardcoded for now — replace with real data when backend is wired)
 const TAB_BADGES = {
   Orders:   3,
   Messages: 4,
 };
 
-export default function AdminSidebar({ user, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, onLogoutClick }) {
+export default function AdminSidebar({ user, activeTab, setActiveTab, sidebarOpen, setSidebarOpen, onLogoutClick, onExitDashboard }) {
   const initials = user.email ? user.email.slice(0, 2).toUpperCase() : 'AD';
   const displayName = user.name || user.email || 'admin@agrifair.ph';
   const displayRole = user.role || 'Admin';
@@ -57,7 +55,10 @@ export default function AdminSidebar({ user, activeTab, setActiveTab, sidebarOpe
               <div className="ap-user-role">{displayRole}</div>
             </div>
           </div>
-          <button className="ap-logout-btn" onClick={onLogoutClick}>🚪 Logout</button>
+          {onExitDashboard && (
+            <button className="ap-exit-btn" onClick={onExitDashboard}>🏠 Exit Dashboard</button>
+          )}
+          <button className="ap-logout-btn" onClick={onLogoutClick}>🚪 Log Out</button>
         </div>
       </aside>
 

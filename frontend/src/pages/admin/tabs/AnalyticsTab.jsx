@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 
 /**
  * WEB-08 Descriptive Analytics Dashboard
@@ -335,6 +335,138 @@ export default function AnalyticsTab() {
         </div>
         <BarChart data={SEASONAL} color="#2e7d32" />
       </section>
+
+      {/* ── Export Data ── */}
+      <ExportDataSection range={range} />
     </div>
+  );
+}
+
+// ── Export Data (merged from Reports) ──────────────────────
+const EXPORT_TYPES = [
+  {
+    key: 'sales',        icon: '💰', title: 'Sales Report',
+    desc: 'Revenue breakdown by product and period.',
+    formats: ['PDF', 'CSV'],
+  },
+  {
+    key: 'inventory',    icon: '📦', title: 'Inventory Report',
+    desc: 'Stock levels, low-stock items, and movement history.',
+    formats: ['PDF', 'CSV'],
+  },
+  {
+    key: 'financial',    icon: '📊', title: 'Financial Summary',
+    desc: 'Revenue, expenses, taxes, and net profit summary.',
+    formats: ['PDF'],
+  },
+  {
+    key: 'transactions', icon: '🧾', title: 'Transaction Data',
+    desc: 'Raw transaction log with order IDs and timestamps.',
+    formats: ['CSV'],
+  },
+  {
+    key: 'customers',    icon: '👥', title: 'Customer Report',
+    desc: 'Top buyers, repeat customers, and location distribution.',
+    formats: ['PDF', 'CSV'],
+  },
+  {
+    key: 'orders',       icon: '🛒', title: 'Order Fulfillment',
+    desc: 'Order statuses, fulfillment times, and cancellations.',
+    formats: ['PDF', 'CSV'],
+  },
+];
+
+function ExportDataSection({ range }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const defaultFrom = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - (range === '90d' ? 90 : range === '30d' ? 30 : 7));
+    return d.toISOString().slice(0, 10);
+  })();
+
+  const [from, setFrom]           = useState(defaultFrom);
+  const [to, setTo]               = useState(today);
+  const [generating, setGenerating] = useState(null);
+  const [toast, setToast]         = useState('');
+
+  const handleGenerate = useCallback((report, format) => {
+    const key = `${report.key}-${format}`;
+    setGenerating(key);
+    setTimeout(() => {
+      setGenerating(null);
+      setToast(`${report.title} (${format}) ready — download started.`);
+      try {
+        const filename = `${report.key}_${from}_to_${to}.${format.toLowerCase()}`;
+        const content  = format === 'CSV'
+          ? `Report,${report.title}\nFrom,${from}\nTo,${to}\n\n(Sample data — connect backend to populate)\n`
+          : `%PDF-1.4\n% AgriFair placeholder PDF for ${report.title}\n%%EOF`;
+        const blob = new Blob([content], { type: format === 'CSV' ? 'text/csv' : 'application/pdf' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+      } catch { /* ignore */ }
+      setTimeout(() => setToast(''), 3500);
+    }, 900);
+  }, [from, to]);
+
+  return (
+    <section className="ap-panel ap-export-section">
+      <div className="ap-panel-header">
+        <div>
+          <h3>Export Data</h3>
+          <span className="ap-panel-sub">Generate and download reports for your records</span>
+        </div>
+      </div>
+
+      {toast && <div className="ap-toast">{toast}</div>}
+
+      {/* Date range */}
+      <div className="ap-export-range">
+        <div className="ap-form-field">
+          <label>From</label>
+          <input type="date" value={from} max={to} onChange={e => setFrom(e.target.value)} />
+        </div>
+        <div className="ap-form-field">
+          <label>To</label>
+          <input type="date" value={to} min={from} max={today} onChange={e => setTo(e.target.value)} />
+        </div>
+        <div className="ap-range-presets">
+          {[['Last 7 days', 7], ['Last 30 days', 30], ['Last 90 days', 90]].map(([label, days]) => (
+            <button key={label} className="ap-chip" type="button" onClick={() => {
+              const d = new Date(); d.setDate(d.getDate() - days);
+              setFrom(d.toISOString().slice(0, 10)); setTo(today);
+            }}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Report cards */}
+      <div className="ap-report-grid">
+        {EXPORT_TYPES.map(r => (
+          <div className="ap-report-card" key={r.key}>
+            <div className="ap-report-icon">{r.icon}</div>
+            <h4 className="ap-report-title">{r.title}</h4>
+            <p className="ap-report-desc">{r.desc}</p>
+            <div className="ap-report-actions">
+              {r.formats.map(fmt => {
+                const busy = generating === `${r.key}-${fmt}`;
+                return (
+                  <button
+                    key={fmt}
+                    className={`ap-btn-${fmt === 'PDF' ? 'primary' : 'ghost'}`}
+                    onClick={() => handleGenerate(r, fmt)}
+                    disabled={busy}
+                    type="button"
+                  >
+                    {busy ? 'Generating…' : `Download ${fmt}`}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
@@ -20,8 +20,8 @@ const FEATURES = [
   },
   {
     icon: '📊',
-    title: 'Performance Reports',
-    desc: 'Generate detailed reports on fair performance and user engagement.',
+    title: 'Export & Reports',
+    desc: 'Generate detailed sales, inventory, and financial reports in one click.',
   },
   {
     icon: '👥',
@@ -42,7 +42,6 @@ const STATS = [
   { value: '24/7', label: 'Support' },
 ];
 
-// Footer link groups (multi-column layout, similar to the Smart reference)
 const FOOTER_GROUPS = [
   {
     heading: 'Platform',
@@ -50,8 +49,7 @@ const FOOTER_GROUPS = [
       { label: 'Features', href: '#features' },
       { label: 'About', href: '#about' },
       { label: 'Mobile App', href: '#about' },
-      { label: 'Pricing', href: '#' },
-      { label: 'What\u2019s New', href: '#' },
+      { label: "What's New", href: '#' },
     ],
   },
   {
@@ -78,7 +76,7 @@ const FOOTER_GROUPS = [
     heading: 'Company',
     links: [
       { label: 'About Us', href: '#about' },
-      { label: 'Contact', href: '#' },
+      { label: 'Contact', href: '#contact' },
       { label: 'Careers', href: '#' },
       { label: 'Press Kit', href: '#' },
       { label: 'Partnerships', href: '#' },
@@ -96,23 +94,41 @@ const FOOTER_GROUPS = [
   },
 ];
 
+// Smooth scroll to hash element
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 export default function LandingPage() {
   const navigate = useNavigate();
-  const heroRef = useRef(null);
+  const heroRef  = useRef(null);
+  const [navScrolled, setNavScrolled] = useState(false);
+  const [menuOpen, setMenuOpen]       = useState(false);
 
+  // Check if user is logged in — to show "Go to Dashboard" instead of "Sign In"
+  const token = sessionStorage.getItem('token');
+  const user  = (() => {
+    try { return JSON.parse(sessionStorage.getItem('user') || 'null'); } catch { return null; }
+  })();
+  const isLoggedIn = !!(token && user);
+
+  // Scroll-based nav shadow
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Intersection observer for animate-on-scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
+      (entries) => entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      }),
       { threshold: 0.1 }
     );
-
-    document.querySelectorAll('.animate-on-scroll').forEach((el) => observer.observe(el));
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, []);
 
@@ -120,31 +136,78 @@ export default function LandingPage() {
     if (href.startsWith('/')) {
       e.preventDefault();
       navigate(href);
+    } else if (href.startsWith('#') && href.length > 1) {
+      e.preventDefault();
+      scrollTo(href.slice(1));
     }
-    // Hash links (#about, #features, #) fall through to default browser behavior
+  };
+
+  const handleDashboardNav = () => {
+    if (!isLoggedIn) { navigate('/login'); return; }
+    const role = (user.role || '').toLowerCase();
+    navigate(role === 'superadmin' ? '/superadmin' : '/admin');
   };
 
   return (
     <div className="lp-root">
       {/* NAV */}
-      <nav className="lp-nav">
+      <nav className={`lp-nav ${navScrolled ? 'lp-nav-scrolled' : ''}`}>
         <div className="lp-nav-inner">
-          <div className="lp-logo">
+          <div className="lp-logo" onClick={() => scrollTo('hero')} style={{ cursor: 'pointer' }}>
             <span className="lp-logo-icon">🌿</span>
             <span className="lp-logo-text">AgriFair</span>
           </div>
+
+          {/* Desktop links */}
           <div className="lp-nav-links">
-            <a href="#features">Features</a>
-            <a href="#about">About</a>
-            <button className="lp-nav-cta" onClick={() => navigate('/login')}>
-              Sign In
-            </button>
+            <a href="#features" onClick={e => { e.preventDefault(); scrollTo('features'); }}>Features</a>
+            <a href="#about"    onClick={e => { e.preventDefault(); scrollTo('about'); }}>About</a>
+            <a href="#contact"  onClick={e => { e.preventDefault(); scrollTo('contact'); }}>Contact</a>
+            {isLoggedIn ? (
+              <button className="lp-nav-cta" onClick={handleDashboardNav}>
+                Go to Dashboard →
+              </button>
+            ) : (
+              <>
+                <button className="lp-nav-ghost" onClick={() => navigate('/register')}>Sign Up</button>
+                <button className="lp-nav-cta"   onClick={() => navigate('/login')}>Sign In</button>
+              </>
+            )}
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="lp-nav-hamburger"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? '✕' : '☰'}
+          </button>
         </div>
+
+        {/* Mobile dropdown */}
+        {menuOpen && (
+          <div className="lp-mobile-menu">
+            <a href="#features" onClick={e => { e.preventDefault(); scrollTo('features'); setMenuOpen(false); }}>Features</a>
+            <a href="#about"    onClick={e => { e.preventDefault(); scrollTo('about');    setMenuOpen(false); }}>About</a>
+            <a href="#contact"  onClick={e => { e.preventDefault(); scrollTo('contact');  setMenuOpen(false); }}>Contact</a>
+            <hr className="lp-menu-divider" />
+            {isLoggedIn ? (
+              <button className="lp-nav-cta" onClick={() => { handleDashboardNav(); setMenuOpen(false); }}>
+                Go to Dashboard →
+              </button>
+            ) : (
+              <>
+                <button onClick={() => { navigate('/register'); setMenuOpen(false); }}>Sign Up</button>
+                <button className="lp-nav-cta" onClick={() => { navigate('/login'); setMenuOpen(false); }}>Sign In</button>
+              </>
+            )}
+          </div>
+        )}
       </nav>
 
-      {/* HERO — simplified: no dashboard window mock, no redundant Log In/Sign Up buttons */}
-      <section className="lp-hero lp-hero-simple" ref={heroRef}>
+      {/* HERO */}
+      <section className="lp-hero lp-hero-simple" id="hero" ref={heroRef}>
         <div className="lp-hero-bg">
           <div className="lp-orb lp-orb1" />
           <div className="lp-orb lp-orb2" />
@@ -163,11 +226,18 @@ export default function LandingPage() {
             A centralized platform for admins to oversee events, users, analytics,
             and mobile integrations — all in one place.
           </p>
+          <button
+            className="lp-hero-scroll-hint"
+            onClick={() => scrollTo('stats')}
+            aria-label="Scroll to stats"
+          >
+            ↓
+          </button>
         </div>
       </section>
 
       {/* STATS */}
-      <section className="lp-stats">
+      <section className="lp-stats" id="stats">
         <div className="lp-stats-inner">
           {STATS.map((s) => (
             <div className="lp-stat-item animate-on-scroll" key={s.label}>
@@ -204,7 +274,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ABOUT — text on left, QR placeholder on right (replaces stacked admin-cards visual) */}
+      {/* ABOUT */}
       <section className="lp-about" id="about">
         <div className="lp-section-inner lp-about-inner">
           <div className="lp-about-text animate-on-scroll">
@@ -215,7 +285,12 @@ export default function LandingPage() {
               Scan the QR code to download the companion mobile app and start managing
               your fair on the go.
             </p>
-            {/* "Sign In Now →" button removed — redundant with the nav CTA */}
+            <button
+              className="lp-btn-primary lp-about-cta"
+              onClick={() => navigate('/register')}
+            >
+              Get Started Free →
+            </button>
           </div>
 
           <div className="lp-about-visual animate-on-scroll">
@@ -230,7 +305,6 @@ export default function LandingPage() {
               <div className="lp-qr-right">
                 <h3 className="lp-qr-heading">Download AgriFair Now!</h3>
                 <div className="lp-qr-code" aria-label="QR code placeholder">
-                  {/* Pure-CSS placeholder QR (decorative). Replace with a real QR image when ready. */}
                   <div className="lp-qr-code-pattern">
                     {Array.from({ length: 49 }).map((_, i) => (
                       <span key={i} className={`lp-qr-cell ${i % 3 === 0 || i % 5 === 0 ? 'on' : ''}`} />
@@ -247,27 +321,52 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* CONTACT */}
+      <section className="lp-contact" id="contact">
+        <div className="lp-section-inner lp-contact-inner animate-on-scroll">
+          <div className="lp-section-badge">Contact</div>
+          <h2 className="lp-section-title">Get in Touch</h2>
+          <p className="lp-section-sub">
+            Have questions about AgriFair? We'd love to hear from you.
+          </p>
+          <div className="lp-contact-cards">
+            <div className="lp-contact-card">
+              <span className="lp-contact-icon">📧</span>
+              <h4>Email Us</h4>
+              <p>support@agrifair.ph</p>
+            </div>
+            <div className="lp-contact-card">
+              <span className="lp-contact-icon">📞</span>
+              <h4>Call Us</h4>
+              <p>+63 2 8888 0000</p>
+            </div>
+            <div className="lp-contact-card">
+              <span className="lp-contact-icon">🏢</span>
+              <h4>Office</h4>
+              <p>Quezon City, Metro Manila, PH</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="lp-cta">
         <div className="lp-cta-inner animate-on-scroll">
           <h2>Ready to manage your fair?</h2>
           <p>Sign in with your admin credentials to get started.</p>
-          <div className="lp-hero-actions lp-hero-actions-centered">
-            <button className="lp-btn-white" onClick={() => navigate('/login')}>
-              Log In <span>→</span>
-            </button>
-            <button className="lp-btn-outline-white" onClick={() => navigate('/register')}>
-              Sign Up
-            </button>
-          </div>
+          <button
+            className="lp-btn-white"
+            onClick={isLoggedIn ? handleDashboardNav : () => navigate('/login')}
+          >
+            {isLoggedIn ? 'Go to Dashboard' : 'Sign In'} <span>→</span>
+          </button>
         </div>
       </section>
 
-      {/* FOOTER — expanded with multiple link columns (inspired by reference image) */}
+      {/* FOOTER */}
       <footer className="lp-footer">
         <div className="lp-footer-top">
           <div className="lp-footer-inner">
-            {/* Left: brand + tagline + socials */}
             <div className="lp-footer-brand">
               <div className="lp-logo">
                 <span className="lp-logo-icon">🌿</span>
@@ -278,16 +377,15 @@ export default function LandingPage() {
                 marketplace for the agricultural community.
               </p>
               <div className="lp-footer-socials" aria-label="Social media links">
-                <a href="#" aria-label="Facebook"   className="lp-footer-social">f</a>
+                <a href="#" aria-label="Facebook"    className="lp-footer-social">f</a>
                 <a href="#" aria-label="X / Twitter" className="lp-footer-social">𝕏</a>
-                <a href="#" aria-label="Instagram"  className="lp-footer-social">◎</a>
-                <a href="#" aria-label="YouTube"    className="lp-footer-social">▶</a>
-                <a href="#" aria-label="LinkedIn"   className="lp-footer-social">in</a>
-                <a href="#" aria-label="TikTok"     className="lp-footer-social">♪</a>
+                <a href="#" aria-label="Instagram"   className="lp-footer-social">◎</a>
+                <a href="#" aria-label="YouTube"     className="lp-footer-social">▶</a>
+                <a href="#" aria-label="LinkedIn"    className="lp-footer-social">in</a>
+                <a href="#" aria-label="TikTok"      className="lp-footer-social">♪</a>
               </div>
             </div>
 
-            {/* Right: link columns */}
             <div className="lp-footer-grid">
               {FOOTER_GROUPS.map((group) => (
                 <div className="lp-footer-col" key={group.heading}>
@@ -325,13 +423,12 @@ export default function LandingPage() {
           <div className="lp-footer-bottom-inner">
             <p className="lp-footer-copy">© 2025 AgriFair. Capstone Project. All rights reserved.</p>
             <div className="lp-footer-legal">
+              <a href="#" onClick={e => { e.preventDefault(); scrollTo('contact'); }}>Contact Us</a>
               <a href="#">Terms of Use</a>
               <a href="#">Privacy Policy</a>
               <a href="#">Careers</a>
               <a href="#">About Us</a>
-              <a href="#">Contact Us</a>
               <a href="#">Our Network</a>
-              <a href="#">Store Locator</a>
             </div>
           </div>
         </div>

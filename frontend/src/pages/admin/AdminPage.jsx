@@ -11,7 +11,6 @@ import DashboardTab   from './tabs/DashboardTab';
 import ProductListTab from './tabs/ProductListTab';
 import OrdersTab      from './tabs/OrdersTab';
 import AnalyticsTab   from './tabs/AnalyticsTab';
-import ReportsTab     from './tabs/ReportsTab';
 import MessagesTab    from './tabs/MessagesTab';
 import SettingsTab    from './tabs/SettingsTab';
 
@@ -25,8 +24,6 @@ export default function AdminPage({ onLogout }) {
   const [showLogout, setShowLogout]   = useState(false);
 
   useEffect(() => {
-    // Use the canonical 'user' key (set by LoginPage). Fall back to legacy
-    // 'userSession' key for older sessions.
     const u = sessionStorage.getItem('user') || sessionStorage.getItem('userSession');
     if (u) {
       try { setUser(JSON.parse(u)); } catch { /* ignore */ }
@@ -46,6 +43,11 @@ export default function AdminPage({ onLogout }) {
     navigate('/login');
   };
 
+  // Exit dashboard without logging out — goes back to landing page
+  const handleExitDashboard = () => {
+    navigate('/');
+  };
+
   // ── Tab renderer ──────────────────────────────────────
   const renderTab = () => {
     switch (activeTab) {
@@ -53,12 +55,16 @@ export default function AdminPage({ onLogout }) {
       case 'Product List': return <ProductListTab />;
       case 'Orders':       return <OrdersTab />;
       case 'Analytics':    return <AnalyticsTab />;
-      case 'Reports':      return <ReportsTab />;
       case 'Messages':     return <MessagesTab />;
       case 'Settings':     return <SettingsTab />;
       default:             return null;
     }
   };
+
+  // Derive a friendly display name for the topbar greeting
+  const displayName = user.name
+    || (user.email ? user.email.split('@')[0] : null)
+    || 'Admin';
 
   return (
     <div className="ap-root">
@@ -70,6 +76,7 @@ export default function AdminPage({ onLogout }) {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogoutClick={() => setShowLogout(true)}
+        onExitDashboard={handleExitDashboard}
       />
 
       {/* MAIN */}
@@ -79,11 +86,8 @@ export default function AdminPage({ onLogout }) {
           <div className="ap-topbar-title">{activeTab}</div>
           <div className="ap-topbar-right">
             <NotificationCenter />
-            <div className="ap-topbar-user">
-              <div className="ap-topbar-avatar">
-                {(user.email || 'AD').slice(0, 2).toUpperCase()}
-              </div>
-            </div>
+            {/* Greeting only — no Log Out button here; it lives in the sidebar */}
+            <span className="ap-topbar-greeting">Hello, {displayName}.</span>
           </div>
         </header>
         <div className="ap-body">{renderTab()}</div>
