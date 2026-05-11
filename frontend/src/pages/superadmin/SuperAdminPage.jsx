@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../admin/AdminPage.css';
 import './SuperAdminPage.css';
@@ -384,36 +384,7 @@ export default function SuperAdminPage({ onLogout }) {
       );
 
       // ── SETTINGS ──────────────────────────────────────────────────────
-      case 'Settings': return (
-        <div className="ap-tab-content">
-          <div className="ap-page-header">
-            <div><h2>Platform Settings</h2><span className="ap-page-sub">System-wide configuration (super admin only)</span></div>
-          </div>
-          <div className="ap-panel">
-            <div className="ap-panel-header"><h3>Access Control</h3><span className="ap-panel-sub">Who can register and what they can do</span></div>
-            {[
-              { label:'Allow new admin self-registration',  desc:'If disabled, admins can only be created by a super admin.',    on: true  },
-              { label:'Require admin approval before login', desc:'New admins stay in "pending" until a super admin approves.',   on: true  },
-              { label:'Allow user self-deletion',           desc:'Users can delete their own accounts from the mobile app.',      on: false },
-              { label:'Maintenance mode',                   desc:'Locks the platform for all non-superadmin users.',              on: false },
-            ].map(s => (
-              <div className="ap-notif-row" key={s.label}>
-                <div>
-                  <div className="ap-notif-label">{s.label}</div>
-                  <div className="ap-notif-desc">{s.desc}</div>
-                </div>
-                <label className="ap-switch">
-                  <input type="checkbox" defaultChecked={s.on} />
-                  <span className="ap-switch-slider" />
-                </label>
-              </div>
-            ))}
-            <div className="ap-form-actions" style={{marginTop:'1rem'}}>
-              <button className="ap-btn-primary" onClick={() => flashToast('Platform settings saved.')}>Save Settings</button>
-            </div>
-          </div>
-        </div>
-      );
+      case 'Settings': return <SuperAdminSettings flashToast={flashToast} />;
 
       default: return null;
     }
@@ -496,6 +467,244 @@ export default function SuperAdminPage({ onLogout }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Persistence helpers (shared pattern with Admin SettingsTab) ──────────
+function loadLS(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function saveLS(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* quota — fail silently */ }
+}
+
+// ── Default values ───────────────────────────────────────────────────────
+const DEFAULT_SA_ACCESS = {
+  selfRegistration:    true,
+  requireApproval:     true,
+  allowUserDeletion:   false,
+  maintenanceMode:     false,
+};
+
+const DEFAULT_SA_PLATFORM = {
+  platformName:    'AgriFair',
+  supportEmail:    'support@agrifair.ph',
+  maxProductImages: '5',
+  orderTimeout:     '48',
+};
+
+const DEFAULT_SA_NOTIFS = {
+  newAdminAlert:    true,
+  suspensionReport: true,
+  weeklyDigest:     true,
+  systemAlerts:     true,
+};
+
+// ── SuperAdminSettings component ─────────────────────────────────────────
+const SA_SECTIONS = [
+  { key: 'access',   icon: '🔐', label: 'Access Control'    },
+  { key: 'platform', icon: '⚙️', label: 'Platform Config'   },
+  { key: 'notifs',   icon: '🔔', label: 'Notifications'     },
+  { key: 'danger',   icon: '⚠️', label: 'Danger Zone'       },
+];
+
+function SuperAdminSettings({ flashToast }) {
+  const [section, setSection] = useState('access');
+
+  const [access,   setAccessState]   = useState(() => loadLS('agrifair_sa_access',   DEFAULT_SA_ACCESS));
+  const [platform, setPlatformState]  = useState(() => loadLS('agrifair_sa_platform', DEFAULT_SA_PLATFORM));
+  const [saNotifs, setSaNotifsState]  = useState(() => loadLS('agrifair_sa_notifs',   DEFAULT_SA_NOTIFS));
+
+  const setAccess = useCallback(updater => setAccessState(prev => {
+    const next = typeof updater === 'function' ? updater(prev) : updater;
+    saveLS('agrifair_sa_access', next);
+    return next;
+  }), []);
+
+  const setPlatform = useCallback(updater => setPlatformState(prev => {
+    const next = typeof updater === 'function' ? updater(prev) : updater;
+    saveLS('agrifair_sa_platform', next);
+    return next;
+  }), []);
+
+  const setSaNotifs = useCallback(updater => setSaNotifsState(prev => {
+    const next = typeof updater === 'function' ? updater(prev) : updater;
+    saveLS('agrifair_sa_notifs', next);
+    return next;
+  }), []);
+
+  const toggleAccess  = (k) => setAccess(a  => ({ ...a,  [k]: !a[k]  }));
+  const toggleSaNotif = (k) => setSaNotifs(n => ({ ...n, [k]: !n[k]  }));
+
+  const handleResetAll = () => {
+    if (!window.confirm('Reset ALL platform settings to defaults? This cannot be undone.')) return;
+    setAccess(DEFAULT_SA_ACCESS);
+    setPlatform(DEFAULT_SA_PLATFORM);
+    setSaNotifs(DEFAULT_SA_NOTIFS);
+    flashToast('All settings reset to defaults.');
+  };
+
+  return (
+    <div className="ap-tab-content">
+      <div className="ap-page-header">
+        <div>
+          <h2>Platform Settings</h2>
+          <span className="ap-page-sub">System-wide configuration — changes persist across sessions</span>
+        </div>
+      </div>
+
+      <div className="ap-settings-layout">
+        <nav className="ap-settings-nav">
+          {SA_SECTIONS.map(s => (
+            <button
+              key={s.key}
+              className={`ap-settings-nav-item ${section === s.key ? 'active' : ''}`}
+              onClick={() => setSection(s.key)}
+              type="button"
+            >
+              <span>{s.icon}</span> {s.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="ap-settings-body">
+
+          {/* ACCESS CONTROL */}
+          {section === 'access' && (
+            <div className="ap-panel">
+              <div className="ap-panel-header">
+                <h3>Access Control</h3>
+                <span className="ap-panel-sub">Who can register and what they can do — toggles save instantly</span>
+              </div>
+              {[
+                { key: 'selfRegistration',  label: 'Allow new admin self-registration',   desc: 'If disabled, admins can only be created by a super admin.' },
+                { key: 'requireApproval',   label: 'Require admin approval before login', desc: 'New admins stay in "pending" until a super admin approves.' },
+                { key: 'allowUserDeletion', label: 'Allow user self-deletion',             desc: 'Users can delete their own accounts from the mobile app.' },
+                { key: 'maintenanceMode',   label: 'Maintenance mode',                    desc: 'Locks the platform for all non-superadmin users.' },
+              ].map(s => (
+                <div className="ap-notif-row" key={s.key}>
+                  <div>
+                    <div className="ap-notif-label">{s.label}</div>
+                    <div className="ap-notif-desc">{s.desc}</div>
+                  </div>
+                  <label className="ap-switch">
+                    <input
+                      type="checkbox"
+                      checked={access[s.key]}
+                      onChange={() => toggleAccess(s.key)}
+                    />
+                    <span className="ap-switch-slider" />
+                  </label>
+                </div>
+              ))}
+              <div className="ap-form-actions" style={{ marginTop: '1rem' }}>
+                <button className="ap-btn-primary" onClick={() => flashToast('Access settings saved.')}>Save Access Settings</button>
+                <span className="ap-settings-autosave-hint">✓ Toggles also save instantly</span>
+              </div>
+            </div>
+          )}
+
+          {/* PLATFORM CONFIG */}
+          {section === 'platform' && (
+            <div className="ap-panel">
+              <div className="ap-panel-header">
+                <h3>Platform Configuration</h3>
+                <span className="ap-panel-sub">Global platform parameters</span>
+              </div>
+              <div className="ap-form-row">
+                <div className="ap-form-field">
+                  <label>Platform Name</label>
+                  <input value={platform.platformName} onChange={e => setPlatform(p => ({ ...p, platformName: e.target.value }))} />
+                </div>
+                <div className="ap-form-field">
+                  <label>Support Email</label>
+                  <input type="email" value={platform.supportEmail} onChange={e => setPlatform(p => ({ ...p, supportEmail: e.target.value }))} />
+                </div>
+              </div>
+              <div className="ap-form-row">
+                <div className="ap-form-field">
+                  <label>Max Product Images per Listing</label>
+                  <input type="number" min="1" max="20" value={platform.maxProductImages} onChange={e => setPlatform(p => ({ ...p, maxProductImages: e.target.value }))} />
+                </div>
+                <div className="ap-form-field">
+                  <label>Order Timeout (hours)</label>
+                  <input type="number" min="1" value={platform.orderTimeout} onChange={e => setPlatform(p => ({ ...p, orderTimeout: e.target.value }))} />
+                </div>
+              </div>
+              <div className="ap-form-actions">
+                <button className="ap-btn-primary" onClick={() => flashToast('Platform config saved.')}>Save Config</button>
+                <span className="ap-settings-autosave-hint">✓ Changes also auto-saved as you type</span>
+              </div>
+            </div>
+          )}
+
+          {/* NOTIFICATIONS */}
+          {section === 'notifs' && (
+            <div className="ap-panel">
+              <div className="ap-panel-header">
+                <h3>Super Admin Notifications</h3>
+                <span className="ap-panel-sub">What events trigger alerts for you — toggles save instantly</span>
+              </div>
+              {[
+                { key: 'newAdminAlert',    label: 'New admin registration',   desc: 'Alert when a new admin account is pending approval.' },
+                { key: 'suspensionReport', label: 'Suspension reports',        desc: 'Summary when users or admins are suspended.' },
+                { key: 'weeklyDigest',     label: 'Weekly platform digest',    desc: 'A summary of platform activity every Monday.' },
+                { key: 'systemAlerts',     label: 'System alerts',             desc: 'Critical errors, downtime events, and security notices.' },
+              ].map(n => (
+                <div className="ap-notif-row" key={n.key}>
+                  <div>
+                    <div className="ap-notif-label">{n.label}</div>
+                    <div className="ap-notif-desc">{n.desc}</div>
+                  </div>
+                  <label className="ap-switch">
+                    <input
+                      type="checkbox"
+                      checked={saNotifs[n.key]}
+                      onChange={() => toggleSaNotif(n.key)}
+                    />
+                    <span className="ap-switch-slider" />
+                  </label>
+                </div>
+              ))}
+              <div className="ap-form-actions" style={{ marginTop: '1rem' }}>
+                <button className="ap-btn-primary" onClick={() => flashToast('Notification preferences saved.')}>Save Preferences</button>
+                <span className="ap-settings-autosave-hint">✓ Toggles also save instantly</span>
+              </div>
+            </div>
+          )}
+
+          {/* DANGER ZONE */}
+          {section === 'danger' && (
+            <div className="ap-panel sa-danger-panel">
+              <div className="ap-panel-header">
+                <h3>⚠️ Danger Zone</h3>
+                <span className="ap-panel-sub">Irreversible actions — proceed with caution</span>
+              </div>
+              <div className="sa-danger-row">
+                <div>
+                  <div className="ap-notif-label">Reset all settings to defaults</div>
+                  <div className="ap-notif-desc">Clears all saved platform settings and restores factory defaults.</div>
+                </div>
+                <button className="sa-danger-btn" type="button" onClick={handleResetAll}>Reset All</button>
+              </div>
+              <div className="sa-danger-row">
+                <div>
+                  <div className="ap-notif-label">Clear all admin audit logs</div>
+                  <div className="ap-notif-desc">Permanently deletes the system log history. This action cannot be undone.</div>
+                </div>
+                <button className="sa-danger-btn" type="button" onClick={() => flashToast('Audit logs cleared (UI only — connect backend to persist).')}>Clear Logs</button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
     </div>
   );
 }
