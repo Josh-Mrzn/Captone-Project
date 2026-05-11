@@ -1495,3 +1495,459 @@
   padding: 0.2rem 0.65rem;
   border-radius: 100px;
 }
+
+/* ================================================================
+   THEME SYSTEM — Dark / Light / Black
+   ================================================================ */
+
+/* Light theme (default) — initialize CSS vars on :root */
+:root {
+  --theme-bg: #f4f6f9;
+  --theme-surface: #ffffff;
+  --theme-border: #e2e8f0;
+  --theme-text: #1a2e1a;
+  --theme-text-mid: #4a5568;
+  --theme-text-light: #8a9bb0;
+  --theme-topbar: #ffffff;
+  --theme-body-bg: #f4f6f9;
+}
+
+/* Apply theme vars to layout containers */
+.ap-root {
+  background: var(--theme-body-bg, var(--cream));
+  transition: background 0.35s ease;
+}
+.ap-main {
+  transition: background 0.35s ease;
+}
+.ap-topbar {
+  background: var(--theme-topbar, var(--white)) !important;
+  transition: background 0.35s ease;
+}
+.ap-panel {
+  background: var(--theme-surface, var(--white));
+  border-color: var(--theme-border, var(--border));
+  transition: background 0.35s ease, border-color 0.35s ease;
+}
+.ap-body {
+  background: var(--theme-body-bg, var(--cream));
+  transition: background 0.35s ease;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] .ap-root,
+[data-theme="dark"] .ap-body { background: #1a1f29; }
+[data-theme="dark"] .ap-topbar { background: #1c2130 !important; border-color: #333a47 !important; }
+[data-theme="dark"] .ap-panel  { background: #262b35 !important; border-color: #333a47 !important; color: #e8edf4; }
+[data-theme="dark"] .ap-panel h3,
+[data-theme="dark"] .ap-panel h4 { color: #e8edf4; }
+[data-theme="dark"] .ap-form-field label { color: #9aacbf; }
+[data-theme="dark"] .ap-form-field input,
+[data-theme="dark"] .ap-form-field textarea,
+[data-theme="dark"] .ap-form-field select {
+  background: #1e2330;
+  border-color: #3a4255;
+  color: #e8edf4;
+}
+[data-theme="dark"] .ap-form-field input:focus,
+[data-theme="dark"] .ap-form-field textarea:focus { border-color: var(--green-500); }
+[data-theme="dark"] .ap-notif-label { color: #e8edf4; }
+[data-theme="dark"] .ap-notif-desc  { color: #6b7f96; }
+[data-theme="dark"] .ap-notif-row   { border-color: #333a47; }
+[data-theme="dark"] .ap-address-card { background: #1e2330; border-color: #333a47; }
+[data-theme="dark"] .ap-topbar-title { color: #e8edf4; }
+[data-theme="dark"] .ap-topbar-greeting { color: #9aacbf; }
+[data-theme="dark"] .ap-page-header h2 { color: #e8edf4; }
+[data-theme="dark"] .ap-page-sub { color: #6b7f96; }
+[data-theme="dark"] .ap-settings-body { background: transparent; }
+[data-theme="dark"] .ap-tab-content { color: #e8edf4; }
+
+/* Black theme overrides */
+[data-theme="black"] .ap-root,
+[data-theme="black"] .ap-body { background: #000000; }
+[data-theme="black"] .ap-topbar { background: #050505 !important; border-color: #1a1a1a !important; }
+[data-theme="black"] .ap-panel  { background: #0a0a0a !important; border-color: #1a1a1a !important; color: #f0f0f0; }
+[data-theme="black"] .ap-panel h3,
+[data-theme="black"] .ap-panel h4 { color: #f0f0f0; }
+[data-theme="black"] .ap-form-field label { color: #a0a0a0; }
+[data-theme="black"] .ap-form-field input,
+[data-theme="black"] .ap-form-field textarea,
+[data-theme="black"] .ap-form-field select {
+  background: #0d0d0d;
+  border-color: #222222;
+  color: #f0f0f0;
+}
+[data-theme="black"] .ap-form-field input:focus,
+[data-theme="black"] .ap-form-field textarea:focus { border-color: var(--green-500); }
+[data-theme="black"] .ap-notif-label { color: #f0f0f0; }
+[data-theme="black"] .ap-notif-desc  { color: #606060; }
+[data-theme="black"] .ap-notif-row   { border-color: #1a1a1a; }
+[data-theme="black"] .ap-address-card { background: #0d0d0d; border-color: #1a1a1a; }
+[data-theme="black"] .ap-topbar-title { color: #f0f0f0; }
+[data-theme="black"] .ap-topbar-greeting { color: #a0a0a0; }
+[data-theme="black"] .ap-page-header h2 { color: #f0f0f0; }
+[data-theme="black"] .ap-page-sub { color: #606060; }
+[data-theme="black"] .ap-settings-body { background: transparent; }
+[data-theme="black"] .ap-tab-content { color: #f0f0f0; }
+[data-theme="black"] .ap-switch-slider { background: #2a2a2a; }
+
+/* ================================================================
+   SMOOTH ANIMATED SCROLLING — Applied everywhere
+   ================================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Smooth scroll for all scrollable containers in admin */
+.ap-body,
+.ap-nav,
+.ap-notif-list,
+.ap-table-wrap,
+.ap-orders-list,
+.ap-product-list-wrap,
+.ap-settings-body,
+.ap-address-list,
+.ap-notif-prefs,
+.ap-tab-content {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-200) transparent;
+}
+
+.ap-body::-webkit-scrollbar,
+.ap-nav::-webkit-scrollbar,
+.ap-notif-list::-webkit-scrollbar,
+.ap-table-wrap::-webkit-scrollbar,
+.ap-settings-body::-webkit-scrollbar { width: 5px; height: 5px; }
+.ap-body::-webkit-scrollbar-thumb,
+.ap-nav::-webkit-scrollbar-thumb,
+.ap-notif-list::-webkit-scrollbar-thumb,
+.ap-table-wrap::-webkit-scrollbar-thumb,
+.ap-settings-body::-webkit-scrollbar-thumb {
+  background: var(--green-200);
+  border-radius: 100px;
+}
+.ap-body::-webkit-scrollbar-track { background: transparent; }
+
+/* ================================================================
+   SECTION TRANSITION ANIMATION (Settings panel swap)
+   ================================================================ */
+
+.ap-section-transition {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.ap-section-transition.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.ap-section-transition.hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* Page-level tab swap animation */
+@keyframes tabSlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ap-tab-content {
+  animation: tabSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Toast animation */
+.ap-toast-animated {
+  animation: toastPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes toastPop {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ================================================================
+   BUTTON INTERACTION SYSTEM
+   Hover = pressed-down look, Click = ripple + bounce animation
+   ================================================================ */
+
+/* Universal interactive button */
+.ap-btn-interactive {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.15s ease,
+    filter 0.15s ease,
+    background 0.18s ease !important;
+  cursor: pointer;
+}
+
+/* Hover: simulate pressed in */
+.ap-btn-interactive:hover {
+  transform: translateY(1px) scale(0.988) !important;
+  filter: brightness(0.96);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15) inset !important;
+}
+
+/* Active/click: full press */
+.ap-btn-interactive:active {
+  transform: translateY(2px) scale(0.97) !important;
+  filter: brightness(0.92);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.22) inset !important;
+  transition: transform 0.08s ease, filter 0.08s ease !important;
+}
+
+/* Ripple effect on click */
+.ap-btn-interactive::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.ap-btn-interactive:active::after {
+  opacity: 1;
+  transition: opacity 0.08s ease;
+}
+
+/* Apply to primary buttons globally */
+.ap-btn-primary {
+  transition:
+    background 0.18s ease,
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.15s ease !important;
+}
+.ap-btn-primary:hover {
+  transform: translateY(1px) scale(0.988);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18) inset;
+}
+.ap-btn-primary:active {
+  transform: translateY(2px) scale(0.97);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25) inset;
+  filter: brightness(0.90);
+  transition: transform 0.07s ease, filter 0.07s ease !important;
+}
+
+/* Ghost buttons */
+.ap-btn-ghost:hover {
+  transform: translateY(1px) scale(0.988);
+}
+.ap-btn-ghost:active {
+  transform: translateY(2px) scale(0.97);
+  filter: brightness(0.92);
+}
+
+/* Nav items */
+.ap-nav-item {
+  transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease !important;
+}
+.ap-nav-item:hover {
+  transform: translateX(3px) !important;
+}
+.ap-nav-item:active {
+  transform: translateX(2px) scale(0.97) !important;
+}
+.ap-nav-item.active {
+  transform: none !important;
+}
+
+/* Settings nav */
+.ap-settings-nav-item {
+  transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease, border-left 0.15s ease !important;
+}
+.ap-settings-nav-item:hover:not(.active) {
+  transform: translateX(3px) !important;
+}
+.ap-settings-nav-item:active:not(.active) {
+  transform: translateX(2px) scale(0.97) !important;
+}
+
+/* Icon buttons */
+.ap-icon-btn {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s ease !important;
+}
+.ap-icon-btn:hover {
+  transform: scale(1.12) !important;
+}
+.ap-icon-btn:active {
+  transform: scale(0.93) !important;
+  transition: transform 0.07s ease !important;
+}
+
+/* Logout / exit buttons */
+.ap-logout-btn,
+.ap-exit-btn {
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.ap-logout-btn:hover,
+.ap-exit-btn:hover {
+  transform: translateY(1px) !important;
+}
+.ap-logout-btn:active,
+.ap-exit-btn:active {
+  transform: translateY(2px) scale(0.97) !important;
+  filter: brightness(0.9);
+}
+
+/* Topbar logout */
+.ap-topbar-logout-btn:hover {
+  transform: translateY(1px) !important;
+}
+.ap-topbar-logout-btn:active {
+  transform: translateY(2px) scale(0.97) !important;
+}
+
+/* Modal buttons */
+.ap-modal-cancel,
+.ap-modal-confirm {
+  transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+.ap-modal-cancel:hover  { transform: translateY(1px) !important; }
+.ap-modal-confirm:hover { transform: translateY(1px) !important; }
+.ap-modal-cancel:active,
+.ap-modal-confirm:active {
+  transform: translateY(2px) scale(0.97) !important;
+  filter: brightness(0.9);
+}
+
+/* Toggle switches — animate the knob more vividly */
+.ap-switch-slider::before {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+.ap-switch:hover .ap-switch-slider::before {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+}
+
+/* Stat cards — lift on hover */
+.ap-stat-card {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+.ap-stat-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+}
+
+/* Table rows — subtle highlight slide-in */
+.ap-table tbody tr {
+  transition: background 0.15s ease !important;
+}
+
+/* ================================================================
+   THEME SWITCHER UI
+   ================================================================ */
+
+.ap-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.ap-theme-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--cream);
+  cursor: pointer;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease !important;
+}
+.ap-theme-card:hover {
+  border-color: var(--green-500);
+  box-shadow: 0 4px 16px rgba(67, 160, 71, 0.15);
+  transform: translateY(-2px) !important;
+}
+.ap-theme-card.active {
+  border-color: var(--green-700);
+  box-shadow: 0 4px 20px rgba(46, 125, 50, 0.2);
+}
+
+/* Theme preview boxes */
+.ap-theme-preview {
+  width: 100%;
+  height: 72px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.ap-theme-preview-bar {
+  height: 18px;
+  flex-shrink: 0;
+}
+.ap-theme-preview-content {
+  flex: 1;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+.ap-theme-preview-line {
+  height: 6px;
+  border-radius: 3px;
+  opacity: 0.6;
+}
+.ap-theme-preview-line.long   { width: 80%; }
+.ap-theme-preview-line.medium { width: 55%; }
+.ap-theme-preview-line.short  { width: 35%; }
+
+/* Light preview */
+.ap-theme-preview-light { background: #f4f6f9; }
+.ap-theme-preview-light .ap-theme-preview-bar { background: #ffffff; border-bottom: 1px solid #e2e8f0; }
+.ap-theme-preview-light .ap-theme-preview-line { background: #4a5568; }
+
+/* Dark preview */
+.ap-theme-preview-dark { background: #1a1f29; }
+.ap-theme-preview-dark .ap-theme-preview-bar { background: #1c2130; border-bottom: 1px solid #333a47; }
+.ap-theme-preview-dark .ap-theme-preview-line { background: #9aacbf; }
+
+/* Black preview */
+.ap-theme-preview-black { background: #000000; }
+.ap-theme-preview-black .ap-theme-preview-bar { background: #050505; border-bottom: 1px solid #1a1a1a; }
+.ap-theme-preview-black .ap-theme-preview-line { background: #606060; }
+
+.ap-theme-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ap-theme-icon { font-size: 1.2rem; flex-shrink: 0; }
+.ap-theme-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+.ap-theme-desc {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin-top: 0.15rem;
+}
+.ap-theme-active-badge {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--green-700);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+}
+.ap-theme-note {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+

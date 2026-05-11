@@ -28,6 +28,11 @@ export default function AdminPage({ onLogout }) {
     if (u) {
       try { setUser(JSON.parse(u)); } catch { /* ignore */ }
     }
+    // Apply saved theme
+    try {
+      const savedTheme = JSON.parse(localStorage.getItem('agrifair_theme') || '"light"');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } catch { /* ignore */ }
   }, []);
 
   const handleLogout = async () => {
@@ -101,8 +106,8 @@ export default function AdminPage({ onLogout }) {
             <h3>Log out?</h3>
             <p>Are you sure you want to sign out of AgriFair Admin?</p>
             <div className="ap-modal-actions">
-              <button className="ap-modal-cancel" onClick={() => setShowLogout(false)}>Cancel</button>
-              <button className="ap-modal-confirm" onClick={handleLogout}>Yes, Log Out</button>
+              <button className="ap-modal-cancel ap-btn-interactive" onClick={() => setShowLogout(false)}>Cancel</button>
+              <button className="ap-modal-confirm ap-btn-interactive" onClick={handleLogout}>Yes, Log Out</button>
             </div>
           </div>
         </div>

@@ -1,26 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 
 /**
  * WEB-03 Product Management
- * Create, edit, and delete rice product listings with variety specifications,
- * pricing, quantities, descriptions, and multiple images. Includes inventory
- * tracking with low-stock alerts and active/inactive status toggle.
+ * Full localStorage persistence — all CRUD operations survive page close/refresh.
+ * Storage key: agrifair_products
  */
 
 const RICE_VARIETIES = [
-  'Jasmine Rice',
-  'Brown Rice',
-  'Sinandomeng',
-  'Dinorado',
-  'Milagrosa',
-  'Black Rice',
-  'Red Rice',
-  'Glutinous Rice',
+  'Jasmine Rice', 'Brown Rice', 'Sinandomeng', 'Dinorado',
+  'Milagrosa', 'Black Rice', 'Red Rice', 'Glutinous Rice',
 ];
 
 const LOW_STOCK_THRESHOLD = 20; // kg
 
-const SAMPLE_PRODUCTS = [
+const SEED_PRODUCTS = [
   {
     id: 1, name: 'Premium Jasmine Rice', variety: 'Jasmine Rice',
     price: 65, stock: 120, unit: 'kg', status: 'Active',
@@ -47,22 +40,49 @@ const SAMPLE_PRODUCTS = [
   },
 ];
 
+const STORAGE_KEY = 'agrifair_products';
+
+function loadProducts() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch { /* ignore */ }
+  // First run — seed with sample data and persist it
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_PRODUCTS)); } catch { /* ignore */ }
+  return SEED_PRODUCTS;
+}
+
+function saveProducts(products) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); } catch { /* ignore */ }
+}
+
 const EMPTY_PRODUCT = {
   name: '', variety: '', price: '', stock: '',
-  unit: 'kg', status: 'Active', description: '',
-  images: [],
+  unit: 'kg', status: 'Active', description: '', images: [],
 };
 
 export default function ProductListTab() {
-  const [products, setProducts]         = useState(SAMPLE_PRODUCTS);
-  const [prodForm, setProdForm]         = useState(EMPTY_PRODUCT);
-  const [editingId, setEditingId]       = useState(null);
+  const [products, setProductsRaw] = useState(loadProducts);
+  const [prodForm, setProdForm]    = useState(EMPTY_PRODUCT);
+  const [editingId, setEditingId]  = useState(null);
   const [showProdForm, setShowProdForm] = useState(false);
 
   // Filters
-  const [search, setSearch]             = useState('');
+  const [search, setSearch]               = useState('');
   const [filterVariety, setFilterVariety] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterStatus, setFilterStatus]   = useState('All');
+
+  // Wrap setter to persist on every change
+  const setProducts = useCallback(updater => {
+    setProductsRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveProducts(next);
+      return next;
+    });
+  }, []);
 
   const lowStockCount = useMemo(
     () => products.filter(p => p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD).length,
@@ -81,13 +101,11 @@ export default function ProductListTab() {
   const handleProdSubmit = (e) => {
     e.preventDefault();
     if (!prodForm.name.trim()) return;
-
     const payload = {
       ...prodForm,
       price: prodForm.price === '' ? 0 : parseFloat(prodForm.price),
       stock: prodForm.stock === '' ? 0 : parseInt(prodForm.stock, 10),
     };
-
     if (editingId !== null) {
       setProducts(prev => prev.map(p => p.id === editingId ? { ...payload, id: editingId } : p));
       setEditingId(null);
@@ -127,7 +145,6 @@ export default function ProductListTab() {
     setShowProdForm(false);
   };
 
-  // Mock image picker — adds a placeholder "image" to the form
   const addPlaceholderImage = () => {
     const PLACEHOLDERS = ['🌾', '🍚', '🥡', '🌱', '🥗'];
     const next = PLACEHOLDERS[prodForm.images.length % PLACEHOLDERS.length];
@@ -156,13 +173,12 @@ export default function ProductListTab() {
           )}
         </div>
         {!showProdForm && (
-          <button className="ap-btn-primary" onClick={() => setShowProdForm(true)}>
+          <button className="ap-btn-primary ap-btn-interactive" onClick={() => setShowProdForm(true)}>
             + Add Product
           </button>
         )}
       </div>
 
-      {/* Filter bar */}
       {!showProdForm && (
         <div className="ap-filter-bar">
           <input
@@ -172,19 +188,11 @@ export default function ProductListTab() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <select
-            className="ap-filter-select"
-            value={filterVariety}
-            onChange={e => setFilterVariety(e.target.value)}
-          >
+          <select className="ap-filter-select" value={filterVariety} onChange={e => setFilterVariety(e.target.value)}>
             <option>All</option>
             {RICE_VARIETIES.map(v => <option key={v}>{v}</option>)}
           </select>
-          <select
-            className="ap-filter-select"
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-          >
+          <select className="ap-filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
             <option>All</option>
             <option>Active</option>
             <option>Inactive</option>
@@ -200,20 +208,13 @@ export default function ProductListTab() {
             <div className="ap-form-row">
               <div className="ap-form-field">
                 <label>Product Name *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Premium Jasmine Rice"
+                <input type="text" placeholder="e.g. Premium Jasmine Rice"
                   value={prodForm.name}
-                  onChange={e => setProdForm(p => ({ ...p, name: e.target.value }))}
-                  required
-                />
+                  onChange={e => setProdForm(p => ({ ...p, name: e.target.value }))} required />
               </div>
               <div className="ap-form-field">
                 <label>Rice Variety</label>
-                <select
-                  value={prodForm.variety}
-                  onChange={e => setProdForm(p => ({ ...p, variety: e.target.value }))}
-                >
+                <select value={prodForm.variety} onChange={e => setProdForm(p => ({ ...p, variety: e.target.value }))}>
                   <option value="">— Select variety —</option>
                   {RICE_VARIETIES.map(v => <option key={v}>{v}</option>)}
                 </select>
@@ -223,57 +224,35 @@ export default function ProductListTab() {
             <div className="ap-form-row">
               <div className="ap-form-field">
                 <label>Price (₱ per {prodForm.unit})</label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
+                <input type="number" placeholder="0.00" min="0" step="0.01"
                   value={prodForm.price}
-                  onChange={e => setProdForm(p => ({ ...p, price: e.target.value }))}
-                />
+                  onChange={e => setProdForm(p => ({ ...p, price: e.target.value }))} />
               </div>
               <div className="ap-form-field">
                 <label>Stock</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  min="0"
+                <input type="number" placeholder="0" min="0"
                   value={prodForm.stock}
-                  onChange={e => setProdForm(p => ({ ...p, stock: e.target.value }))}
-                />
+                  onChange={e => setProdForm(p => ({ ...p, stock: e.target.value }))} />
               </div>
               <div className="ap-form-field">
                 <label>Unit</label>
-                <select
-                  value={prodForm.unit}
-                  onChange={e => setProdForm(p => ({ ...p, unit: e.target.value }))}
-                >
-                  <option>kg</option>
-                  <option>sack</option>
-                  <option>cavan</option>
+                <select value={prodForm.unit} onChange={e => setProdForm(p => ({ ...p, unit: e.target.value }))}>
+                  <option>kg</option><option>sack</option><option>cavan</option>
                 </select>
               </div>
               <div className="ap-form-field">
                 <label>Status</label>
-                <select
-                  value={prodForm.status}
-                  onChange={e => setProdForm(p => ({ ...p, status: e.target.value }))}
-                >
-                  <option>Active</option>
-                  <option>Inactive</option>
-                  <option>Out of Stock</option>
+                <select value={prodForm.status} onChange={e => setProdForm(p => ({ ...p, status: e.target.value }))}>
+                  <option>Active</option><option>Inactive</option><option>Out of Stock</option>
                 </select>
               </div>
             </div>
 
             <div className="ap-form-field">
               <label>Description</label>
-              <textarea
-                rows="3"
-                placeholder="Tell buyers about origin, taste, certifications…"
+              <textarea rows="3" placeholder="Tell buyers about origin, taste, certifications…"
                 value={prodForm.description}
-                onChange={e => setProdForm(p => ({ ...p, description: e.target.value }))}
-              />
+                onChange={e => setProdForm(p => ({ ...p, description: e.target.value }))} />
             </div>
 
             <div className="ap-form-field">
@@ -282,30 +261,20 @@ export default function ProductListTab() {
                 {prodForm.images.map((img, i) => (
                   <div className="ap-image-tile" key={i}>
                     <span className="ap-image-emoji">{img}</span>
-                    <button
-                      type="button"
-                      className="ap-image-remove"
-                      onClick={() => removeImage(i)}
-                      aria-label="Remove image"
-                    >×</button>
+                    <button type="button" className="ap-image-remove" onClick={() => removeImage(i)} aria-label="Remove image">×</button>
                   </div>
                 ))}
                 {prodForm.images.length < 5 && (
-                  <button
-                    type="button"
-                    className="ap-image-add"
-                    onClick={addPlaceholderImage}
-                  >
-                    <span>+</span>
-                    <small>Add image</small>
+                  <button type="button" className="ap-image-add" onClick={addPlaceholderImage}>
+                    <span>+</span><small>Add image</small>
                   </button>
                 )}
               </div>
             </div>
 
             <div className="ap-form-actions">
-              <button type="button" className="ap-btn-ghost" onClick={cancelProdForm}>Cancel</button>
-              <button type="submit" className="ap-btn-primary">
+              <button type="button" className="ap-btn-ghost ap-btn-interactive" onClick={cancelProdForm}>Cancel</button>
+              <button type="submit" className="ap-btn-primary ap-btn-interactive">
                 {editingId !== null ? 'Save Changes' : 'Add Product'}
               </button>
             </div>
@@ -325,13 +294,8 @@ export default function ProductListTab() {
             <table className="ap-table">
               <thead>
                 <tr>
-                  <th>Image</th>
-                  <th>Name</th>
-                  <th>Variety</th>
-                  <th>Price</th>
-                  <th>Stock</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>Image</th><th>Name</th><th>Variety</th>
+                  <th>Price</th><th>Stock</th><th>Status</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -339,9 +303,7 @@ export default function ProductListTab() {
                   const badge = getStockBadge(p.stock);
                   return (
                     <tr key={p.id}>
-                      <td>
-                        <div className="ap-thumb">{(p.images && p.images[0]) || '🌾'}</div>
-                      </td>
+                      <td><div className="ap-thumb">{(p.images && p.images[0]) || '🌾'}</div></td>
                       <td className="ap-td-name">
                         {p.name}
                         {p.description && <div className="ap-td-sub">{p.description.slice(0, 60)}{p.description.length > 60 ? '…' : ''}</div>}
@@ -356,7 +318,7 @@ export default function ProductListTab() {
                       </td>
                       <td>
                         <button
-                          className={`ap-badge ap-badge-${p.status.toLowerCase().replace(/ /g, '-')} ap-badge-toggle`}
+                          className={`ap-badge ap-badge-${p.status.toLowerCase().replace(/ /g, '-')} ap-badge-toggle ap-btn-interactive`}
                           onClick={() => toggleStatus(p.id)}
                           title="Click to toggle"
                           type="button"
@@ -366,8 +328,8 @@ export default function ProductListTab() {
                       </td>
                       <td>
                         <div className="ap-row-actions">
-                          <button className="ap-icon-btn edit" onClick={() => handleProdEdit(p)} title="Edit">✏️</button>
-                          <button className="ap-icon-btn delete" onClick={() => handleProdDelete(p.id)} title="Delete">🗑️</button>
+                          <button className="ap-icon-btn edit ap-btn-interactive" onClick={() => handleProdEdit(p)} title="Edit">✏️</button>
+                          <button className="ap-icon-btn delete ap-btn-interactive" onClick={() => handleProdDelete(p.id)} title="Delete">🗑️</button>
                         </div>
                       </td>
                     </tr>

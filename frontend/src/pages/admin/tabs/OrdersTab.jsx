@@ -1,13 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 
 /**
  * WEB-07 Order Management
- * View, accept/reject, and update order status (Pending, Confirmed, Processing,
- * Shipped, Delivered, Completed). Display comprehensive order details with
- * tracking timeline. Enable order cancellation for pending orders with refund.
- *
- * Also surfaces WEB-06 payment information (GCash, PayMaya, COD, Bank Transfer)
- * via the order detail panel.
+ * Full localStorage persistence — order status changes survive page close/refresh.
+ * Storage key: agrifair_orders
  */
 
 const STATUSES = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Completed', 'Cancelled'];
@@ -36,7 +32,7 @@ const PAYMENT_BADGE = {
   'Bank Transfer': { icon: '🏦', cls: 'ap-pay-bank', label: 'Bank Transfer' },
 };
 
-const SAMPLE_ORDERS = [
+const SEED_ORDERS = [
   {
     id: 1042, buyer: 'Maria Santos', email: 'maria@example.com',
     address: '12 Sampaguita St., Quezon City',
@@ -77,11 +73,37 @@ const SAMPLE_ORDERS = [
   },
 ];
 
+const STORAGE_KEY = 'agrifair_orders';
+
+function loadOrders() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch { /* ignore */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_ORDERS)); } catch { /* ignore */ }
+  return SEED_ORDERS;
+}
+
+function saveOrders(orders) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(orders)); } catch { /* ignore */ }
+}
+
 export default function OrdersTab() {
-  const [orders, setOrders] = useState(SAMPLE_ORDERS);
+  const [orders, setOrdersRaw] = useState(loadOrders);
   const [selectedId, setSelectedId] = useState(null);
-  const [filter, setFilter] = useState('All');
-  const [search, setSearch] = useState('');
+  const [filter, setFilter]     = useState('All');
+  const [search, setSearch]     = useState('');
+
+  const setOrders = useCallback(updater => {
+    setOrdersRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveOrders(next);
+      return next;
+    });
+  }, []);
 
   const counts = useMemo(() => {
     const map = { All: orders.length };
@@ -117,16 +139,11 @@ export default function OrdersTab() {
     month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
-  // Build the tracking timeline from a status
   const timelineSteps = (status) => {
     if (status === 'Cancelled') return [{ label: 'Cancelled', done: true, current: true }];
     const order = ['Pending', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Completed'];
     const idx = order.indexOf(status);
-    return order.map((label, i) => ({
-      label,
-      done: i <= idx,
-      current: i === idx,
-    }));
+    return order.map((label, i) => ({ label, done: i <= idx, current: i === idx }));
   };
 
   return (
@@ -136,12 +153,11 @@ export default function OrdersTab() {
         <span className="ap-page-sub">Manage incoming orders, payments, and fulfillment</span>
       </div>
 
-      {/* Status filter chips */}
       <div className="ap-chip-row">
         {['All', ...STATUSES].map(s => (
           <button
             key={s}
-            className={`ap-chip ${filter === s ? 'active' : ''}`}
+            className={`ap-chip ap-btn-interactive ${filter === s ? 'active' : ''}`}
             onClick={() => setFilter(s)}
             type="button"
           >
@@ -151,7 +167,6 @@ export default function OrdersTab() {
       </div>
 
       <div className="ap-orders-layout">
-        {/* Order list */}
         <div className="ap-panel ap-orders-list">
           <div className="ap-orders-search">
             <input
@@ -188,7 +203,6 @@ export default function OrdersTab() {
           )}
         </div>
 
-        {/* Order detail */}
         <div className="ap-panel ap-order-detail">
           {!selected ? (
             <div className="ap-order-empty">
@@ -205,7 +219,6 @@ export default function OrdersTab() {
                 <span className={`ap-status-pill ${STATUS_TONE[selected.status]}`}>{selected.status}</span>
               </div>
 
-              {/* Tracking timeline */}
               <div className="ap-timeline">
                 {timelineSteps(selected.status).map((step, i, arr) => (
                   <div key={step.label} className={`ap-timeline-step ${step.done ? 'done' : ''} ${step.current ? 'current' : ''}`}>
@@ -216,7 +229,6 @@ export default function OrdersTab() {
                 ))}
               </div>
 
-              {/* Buyer */}
               <div className="ap-order-section">
                 <h4>Buyer</h4>
                 <div className="ap-kv"><span>Name</span><strong>{selected.buyer}</strong></div>
@@ -224,7 +236,6 @@ export default function OrdersTab() {
                 <div className="ap-kv"><span>Delivery Address</span><strong>{selected.address}</strong></div>
               </div>
 
-              {/* Items */}
               <div className="ap-order-section">
                 <h4>Items</h4>
                 <table className="ap-mini-table">
@@ -248,7 +259,6 @@ export default function OrdersTab() {
                 </table>
               </div>
 
-              {/* Payment */}
               <div className="ap-order-section">
                 <h4>Payment</h4>
                 <div className="ap-payment-box">
@@ -261,15 +271,14 @@ export default function OrdersTab() {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="ap-order-actions">
                 {selected.status !== 'Completed' && selected.status !== 'Cancelled' && (
                   <>
-                    <button className="ap-btn-primary" onClick={() => advanceStatus(selected.id)}>
+                    <button className="ap-btn-primary ap-btn-interactive" onClick={() => advanceStatus(selected.id)}>
                       Mark as {NEXT_STATUS[selected.status]} →
                     </button>
                     {(selected.status === 'Pending' || selected.status === 'Confirmed') && (
-                      <button className="ap-btn-danger" onClick={() => rejectOrCancel(selected.id)}>
+                      <button className="ap-btn-danger ap-btn-interactive" onClick={() => rejectOrCancel(selected.id)}>
                         Cancel Order
                       </button>
                     )}

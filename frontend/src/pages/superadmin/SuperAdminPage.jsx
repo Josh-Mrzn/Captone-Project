@@ -67,6 +67,24 @@ const fmtDate = (iso) => new Date(iso).toLocaleString('en-PH', {
   hour: '2-digit', minute: '2-digit',
 });
 
+const SA_USERS_KEY = 'agrifair_sa_users';
+
+function loadSAUsers() {
+  try {
+    const raw = localStorage.getItem(SA_USERS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch { /* ignore */ }
+  try { localStorage.setItem(SA_USERS_KEY, JSON.stringify(MOCK_USERS)); } catch { /* ignore */ }
+  return MOCK_USERS;
+}
+
+function saveSAUsers(users) {
+  try { localStorage.setItem(SA_USERS_KEY, JSON.stringify(users)); } catch { /* ignore */ }
+}
+
 // ── Component ────────────────────────────────────────────────────────────
 export default function SuperAdminPage({ onLogout }) {
   const navigate  = useNavigate();
@@ -76,9 +94,17 @@ export default function SuperAdminPage({ onLogout }) {
   const [showLogout, setShowLogout] = useState(false);
 
   // Users tab state
-  const [users, setUsers]           = useState(MOCK_USERS);
+  const [users, setUsersRaw]        = useState(loadSAUsers);
   const [userSearch, setUserSearch] = useState('');
   const [userFilter, setUserFilter] = useState('All');
+
+  const setUsers = useCallback(updater => {
+    setUsersRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveSAUsers(next);
+      return next;
+    });
+  }, []);
 
   // System Logs
   const [logs] = useState(MOCK_LOGS);
@@ -86,6 +112,14 @@ export default function SuperAdminPage({ onLogout }) {
   // Toast
   const [toast, setToast] = useState('');
   const flashToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2800); };
+
+  // Apply saved theme on mount (shared with admin panel)
+  useEffect(() => {
+    try {
+      const savedTheme = JSON.parse(localStorage.getItem('agrifair_theme') || '"light"');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } catch { /* ignore */ }
+  }, []);
 
   // ── Runtime guard: redirect if not superadmin ──────────────────────────
   useEffect(() => {
@@ -165,7 +199,7 @@ export default function SuperAdminPage({ onLogout }) {
           {pendingAdmins.length > 0 && (
             <div className="sa-alert-banner">
               ⚠️ {pendingAdmins.length} admin account{pendingAdmins.length > 1 ? 's are' : ' is'} waiting for approval.
-              <button className="sa-alert-link" onClick={() => setActiveTab('Admin Accounts')}>Review →</button>
+              <button className="sa-alert-link ap-btn-interactive" onClick={() => setActiveTab('Admin Accounts')}>Review →</button>
             </div>
           )}
 
@@ -255,10 +289,10 @@ export default function SuperAdminPage({ onLogout }) {
                         <td>
                           <div className="ap-row-actions">
                             {u.role === 'admin' && u.status === 'pending' && (
-                              <button className="ap-icon-btn" title="Approve admin" onClick={() => approveAdmin(u.id)}>✅</button>
+                              <button className="ap-icon-btn ap-btn-interactive" title="Approve admin" onClick={() => approveAdmin(u.id)}>✅</button>
                             )}
                             <button
-                              className="ap-icon-btn"
+                              className="ap-icon-btn ap-btn-interactive"
                               title={u.status === 'active' ? 'Suspend' : 'Activate'}
                               onClick={() => toggleStatus(u.id)}
                             >
@@ -305,7 +339,7 @@ export default function SuperAdminPage({ onLogout }) {
                         <span className="sa-approval-joined">Registered: {a.joined}</span>
                       </div>
                       <div className="ap-row-actions">
-                        <button className="ap-btn-primary" onClick={() => approveAdmin(a.id)}>Approve</button>
+                        <button className="ap-btn-primary ap-btn-interactive" onClick={() => approveAdmin(a.id)}>Approve</button>
                         <button className="ap-btn-danger"  onClick={() => deleteUser(a.id)}>Reject</button>
                       </div>
                     </li>
@@ -334,7 +368,7 @@ export default function SuperAdminPage({ onLogout }) {
                         <td>{a.joined}</td>
                         <td>
                           <div className="ap-row-actions">
-                            <button className="ap-icon-btn" title={a.status==='active'?'Suspend':'Reactivate'} onClick={() => toggleStatus(a.id)}>
+                            <button className="ap-icon-btn ap-btn-interactive" title={a.status==='active'?'Suspend':'Reactivate'} onClick={() => toggleStatus(a.id)}>
                               {a.status === 'active' ? '🚫' : '✔️'}
                             </button>
                             <button className="ap-icon-btn delete" title="Remove admin" onClick={() => deleteUser(a.id)}>🗑️</button>
@@ -431,7 +465,7 @@ export default function SuperAdminPage({ onLogout }) {
               <div className="ap-user-role sa-role-label">Super Admin</div>
             </div>
           </div>
-          <button className="ap-logout-btn" onClick={() => setShowLogout(true)}>🚪 Logout</button>
+          <button className="ap-logout-btn ap-btn-interactive" onClick={() => setShowLogout(true)}>🚪 Logout</button>
         </div>
       </aside>
 
@@ -461,8 +495,8 @@ export default function SuperAdminPage({ onLogout }) {
             <h3>Log out?</h3>
             <p>Sign out of the AgriFair Super Admin panel?</p>
             <div className="ap-modal-actions">
-              <button className="ap-modal-cancel" onClick={() => setShowLogout(false)}>Cancel</button>
-              <button className="ap-modal-confirm" onClick={handleLogout}>Yes, Log Out</button>
+              <button className="ap-modal-cancel ap-btn-interactive" onClick={() => setShowLogout(false)}>Cancel</button>
+              <button className="ap-modal-confirm ap-btn-interactive" onClick={handleLogout}>Yes, Log Out</button>
             </div>
           </div>
         </div>
@@ -516,6 +550,13 @@ const SA_SECTIONS = [
 
 function SuperAdminSettings({ flashToast }) {
   const [section, setSection] = useState('access');
+  const [sectionVisible, setSectionVisible] = useState(true);
+
+  const switchSection = (key) => {
+    if (key === section) return;
+    setSectionVisible(false);
+    setTimeout(() => { setSection(key); setSectionVisible(true); }, 160);
+  };
 
   const [access,   setAccessState]   = useState(() => loadLS('agrifair_sa_access',   DEFAULT_SA_ACCESS));
   const [platform, setPlatformState]  = useState(() => loadLS('agrifair_sa_platform', DEFAULT_SA_PLATFORM));
@@ -564,8 +605,8 @@ function SuperAdminSettings({ flashToast }) {
           {SA_SECTIONS.map(s => (
             <button
               key={s.key}
-              className={`ap-settings-nav-item ${section === s.key ? 'active' : ''}`}
-              onClick={() => setSection(s.key)}
+              className={`ap-settings-nav-item ap-btn-interactive ${section === s.key ? 'active' : ''}`}
+              onClick={() => switchSection(s.key)}
               type="button"
             >
               <span>{s.icon}</span> {s.label}
@@ -573,7 +614,7 @@ function SuperAdminSettings({ flashToast }) {
           ))}
         </nav>
 
-        <div className="ap-settings-body">
+        <div className={`ap-settings-body ap-section-transition ${sectionVisible ? 'visible' : 'hidden'}`}>
 
           {/* ACCESS CONTROL */}
           {section === 'access' && (
@@ -604,7 +645,7 @@ function SuperAdminSettings({ flashToast }) {
                 </div>
               ))}
               <div className="ap-form-actions" style={{ marginTop: '1rem' }}>
-                <button className="ap-btn-primary" onClick={() => flashToast('Access settings saved.')}>Save Access Settings</button>
+                <button className="ap-btn-primary ap-btn-interactive" onClick={() => flashToast('Access settings saved.')}>Save Access Settings</button>
                 <span className="ap-settings-autosave-hint">✓ Toggles also save instantly</span>
               </div>
             </div>
@@ -638,7 +679,7 @@ function SuperAdminSettings({ flashToast }) {
                 </div>
               </div>
               <div className="ap-form-actions">
-                <button className="ap-btn-primary" onClick={() => flashToast('Platform config saved.')}>Save Config</button>
+                <button className="ap-btn-primary ap-btn-interactive" onClick={() => flashToast('Platform config saved.')}>Save Config</button>
                 <span className="ap-settings-autosave-hint">✓ Changes also auto-saved as you type</span>
               </div>
             </div>
@@ -673,7 +714,7 @@ function SuperAdminSettings({ flashToast }) {
                 </div>
               ))}
               <div className="ap-form-actions" style={{ marginTop: '1rem' }}>
-                <button className="ap-btn-primary" onClick={() => flashToast('Notification preferences saved.')}>Save Preferences</button>
+                <button className="ap-btn-primary ap-btn-interactive" onClick={() => flashToast('Notification preferences saved.')}>Save Preferences</button>
                 <span className="ap-settings-autosave-hint">✓ Toggles also save instantly</span>
               </div>
             </div>
@@ -691,14 +732,14 @@ function SuperAdminSettings({ flashToast }) {
                   <div className="ap-notif-label">Reset all settings to defaults</div>
                   <div className="ap-notif-desc">Clears all saved platform settings and restores factory defaults.</div>
                 </div>
-                <button className="sa-danger-btn" type="button" onClick={handleResetAll}>Reset All</button>
+                <button className="sa-danger-btn ap-btn-interactive" type="button" onClick={handleResetAll}>Reset All</button>
               </div>
               <div className="sa-danger-row">
                 <div>
                   <div className="ap-notif-label">Clear all admin audit logs</div>
                   <div className="ap-notif-desc">Permanently deletes the system log history. This action cannot be undone.</div>
                 </div>
-                <button className="sa-danger-btn" type="button" onClick={() => flashToast('Audit logs cleared (UI only — connect backend to persist).')}>Clear Logs</button>
+                <button className="sa-danger-btn ap-btn-interactive" type="button" onClick={() => flashToast('Audit logs cleared (UI only — connect backend to persist).')}>Clear Logs</button>
               </div>
             </div>
           )}

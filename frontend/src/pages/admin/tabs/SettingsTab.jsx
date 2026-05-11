@@ -2,18 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 
 /**
  * WEB-11 Profile Management — with localStorage persistence.
- *
- * Every section saves independently to its own localStorage key so
- * data survives page refreshes, tab closes, and browser restarts.
- *
- * Keys used:
- *   agrifair_admin_profile       — profile form fields
- *   agrifair_admin_farm          — farm details + certifications
- *   agrifair_admin_addresses     — saved addresses array
- *   agrifair_admin_notifications — notification toggles
+ * Updated: Added Dark/Light/Black theme switcher, smooth animations,
+ *          and interactive button feedback.
  */
 
-// ── Persistence helpers ──────────────────────────────────────────────────
 function load(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -29,7 +21,6 @@ function save(key, value) {
   } catch { /* quota exceeded — fail silently */ }
 }
 
-// ── Defaults (first-run values, overridden by localStorage) ─────────────
 const DEFAULT_PROFILE = {
   fullName: 'Juan dela Cruz',
   email: 'admin@agrifair.ph',
@@ -59,26 +50,85 @@ const DEFAULT_NOTIFS = {
   emailDigest: true,
 };
 
-// ── Section list ─────────────────────────────────────────────────────────
 const SECTIONS = [
   { key: 'profile',       icon: '👤', label: 'Profile'       },
   { key: 'farm',          icon: '🌾', label: 'Farm Details'  },
   { key: 'addresses',     icon: '📍', label: 'Addresses'     },
   { key: 'security',      icon: '🔒', label: 'Security'      },
   { key: 'notifications', icon: '🔔', label: 'Notifications' },
+  { key: 'appearance',    icon: '🎨', label: 'Appearance'    },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────
+// Theme definitions
+const THEMES = [
+  {
+    key: 'light',
+    label: 'Light Theme',
+    icon: '☀️',
+    desc: 'Clean, bright interface — default look',
+    vars: {
+      '--theme-bg': '#f4f6f9',
+      '--theme-surface': '#ffffff',
+      '--theme-border': '#e2e8f0',
+      '--theme-text': '#1a2e1a',
+      '--theme-text-mid': '#4a5568',
+      '--theme-text-light': '#8a9bb0',
+      '--theme-topbar': '#ffffff',
+      '--theme-body-bg': '#f4f6f9',
+    },
+  },
+  {
+    key: 'dark',
+    label: 'Dark Theme',
+    icon: '🌙',
+    desc: 'Grayish-dark — easy on the eyes at night',
+    vars: {
+      '--theme-bg': '#1e2128',
+      '--theme-surface': '#262b35',
+      '--theme-border': '#333a47',
+      '--theme-text': '#e8edf4',
+      '--theme-text-mid': '#9aacbf',
+      '--theme-text-light': '#6b7f96',
+      '--theme-topbar': '#1c2130',
+      '--theme-body-bg': '#1a1f29',
+    },
+  },
+  {
+    key: 'black',
+    label: 'Black Theme',
+    icon: '⬛',
+    desc: 'Pure black — #000000 for OLED perfection',
+    vars: {
+      '--theme-bg': '#000000',
+      '--theme-surface': '#0a0a0a',
+      '--theme-border': '#1a1a1a',
+      '--theme-text': '#f0f0f0',
+      '--theme-text-mid': '#a0a0a0',
+      '--theme-text-light': '#606060',
+      '--theme-topbar': '#050505',
+      '--theme-body-bg': '#000000',
+    },
+  },
+];
+
+function applyTheme(themeKey) {
+  const theme = THEMES.find(t => t.key === themeKey) || THEMES[0];
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+  // Also set data attribute for targeted CSS
+  document.documentElement.setAttribute('data-theme', themeKey);
+}
+
 export default function SettingsTab() {
   const [section, setSection] = useState('profile');
+  const [sectionVisible, setSectionVisible] = useState(true);
 
-  // Load from localStorage on mount; fall back to defaults if nothing saved
   const [profile,   setProfileState]   = useState(() => load('agrifair_admin_profile',       DEFAULT_PROFILE));
   const [farm,      setFarmState]       = useState(() => load('agrifair_admin_farm',          DEFAULT_FARM));
   const [addresses, setAddressesState]  = useState(() => load('agrifair_admin_addresses',     DEFAULT_ADDRESSES));
   const [notifs,    setNotifsState]     = useState(() => load('agrifair_admin_notifications', DEFAULT_NOTIFS));
+  const [activeTheme, setActiveThemeState] = useState(() => load('agrifair_theme', 'light'));
 
-  // Wrap setters so every mutation also writes to localStorage immediately
   const setProfile   = useCallback(updater => setProfileState(prev => {
     const next = typeof updater === 'function' ? updater(prev) : updater;
     save('agrifair_admin_profile', next);
@@ -103,7 +153,28 @@ export default function SettingsTab() {
     return next;
   }), []);
 
-  // UI state (not persisted)
+  // Apply saved theme on mount
+  useEffect(() => {
+    applyTheme(activeTheme);
+  }, []);
+
+  const handleThemeChange = (themeKey) => {
+    setActiveThemeState(themeKey);
+    save('agrifair_theme', themeKey);
+    applyTheme(themeKey);
+    flashSaved(`${THEMES.find(t => t.key === themeKey)?.label} applied!`);
+  };
+
+  // Animated section switching
+  const switchSection = (key) => {
+    if (key === section) return;
+    setSectionVisible(false);
+    setTimeout(() => {
+      setSection(key);
+      setSectionVisible(true);
+    }, 160);
+  };
+
   const [newAddress, setNewAddress] = useState({ label: '', full: '' });
   const [pwd,        setPwd]        = useState({ current: '', next: '', confirm: '' });
   const [pwdMsg,     setPwdMsg]     = useState('');
@@ -114,7 +185,6 @@ export default function SettingsTab() {
     setTimeout(() => setSavedToast(''), 2500);
   };
 
-  // Certifications
   const handleAddCert = () => {
     const name = window.prompt('Certification name (e.g. Organic-PH 2025):');
     if (name?.trim()) setFarm(f => ({ ...f, certifications: [...f.certifications, name.trim()] }));
@@ -123,7 +193,6 @@ export default function SettingsTab() {
     setFarm(f => ({ ...f, certifications: f.certifications.filter((_, idx) => idx !== i) }));
   };
 
-  // Addresses
   const handleAddAddress = (e) => {
     e.preventDefault();
     if (!newAddress.label.trim() || !newAddress.full.trim()) return;
@@ -134,7 +203,6 @@ export default function SettingsTab() {
   const setPrimary    = (id) => setAddresses(prev => prev.map(a => ({ ...a, primary: a.id === id })));
   const removeAddress = (id) => setAddresses(prev => prev.filter(a => a.id !== id));
 
-  // Password (UI only — real change requires backend)
   const changePassword = (e) => {
     e.preventDefault();
     if (!pwd.current || !pwd.next || !pwd.confirm) { setPwdMsg('All fields are required.'); return; }
@@ -145,7 +213,6 @@ export default function SettingsTab() {
     flashSaved('Password updated.');
   };
 
-  // Notifications — auto-saves on every toggle
   const toggleNotif = (k) => setNotifs(n => ({ ...n, [k]: !n[k] }));
 
   return (
@@ -157,16 +224,15 @@ export default function SettingsTab() {
         </div>
       </div>
 
-      {savedToast && <div className="ap-toast">{savedToast}</div>}
+      {savedToast && <div className="ap-toast ap-toast-animated">{savedToast}</div>}
 
       <div className="ap-settings-layout">
-        {/* Section nav */}
         <nav className="ap-settings-nav">
           {SECTIONS.map(s => (
             <button
               key={s.key}
-              className={`ap-settings-nav-item ${section === s.key ? 'active' : ''}`}
-              onClick={() => setSection(s.key)}
+              className={`ap-settings-nav-item ap-btn-interactive ${section === s.key ? 'active' : ''}`}
+              onClick={() => switchSection(s.key)}
               type="button"
             >
               <span>{s.icon}</span> {s.label}
@@ -174,7 +240,7 @@ export default function SettingsTab() {
           ))}
         </nav>
 
-        <div className="ap-settings-body">
+        <div className={`ap-settings-body ap-section-transition ${sectionVisible ? 'visible' : 'hidden'}`}>
 
           {/* ── PROFILE ── */}
           {section === 'profile' && (
@@ -187,7 +253,7 @@ export default function SettingsTab() {
                 <div className="ap-profile-avatar">
                   {profile.fullName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
                 </div>
-                <button className="ap-btn-ghost" type="button">Change photo</button>
+                <button className="ap-btn-ghost ap-btn-interactive" type="button">Change photo</button>
               </div>
               <div className="ap-form-row">
                 <div className="ap-form-field">
@@ -208,7 +274,7 @@ export default function SettingsTab() {
                 <textarea rows="3" value={profile.bio} onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))} />
               </div>
               <div className="ap-form-actions">
-                <button className="ap-btn-primary" type="button" onClick={() => flashSaved('Profile saved.')}>
+                <button className="ap-btn-primary ap-btn-interactive" type="button" onClick={() => flashSaved('Profile saved.')}>
                   Save Profile
                 </button>
                 <span className="ap-settings-autosave-hint">✓ Changes are also auto-saved as you type</span>
@@ -251,11 +317,11 @@ export default function SettingsTab() {
                       {c} <button type="button" onClick={() => handleRemoveCert(i)} aria-label="Remove">×</button>
                     </span>
                   ))}
-                  <button className="ap-btn-ghost ap-cert-add" type="button" onClick={handleAddCert}>+ Add Certification</button>
+                  <button className="ap-btn-ghost ap-cert-add ap-btn-interactive" type="button" onClick={handleAddCert}>+ Add Certification</button>
                 </div>
               </div>
               <div className="ap-form-actions">
-                <button className="ap-btn-primary" type="button" onClick={() => flashSaved('Farm details saved.')}>
+                <button className="ap-btn-primary ap-btn-interactive" type="button" onClick={() => flashSaved('Farm details saved.')}>
                   Save Farm Details
                 </button>
                 <span className="ap-settings-autosave-hint">✓ Changes are also auto-saved as you type</span>
@@ -282,9 +348,9 @@ export default function SettingsTab() {
                     </div>
                     <div className="ap-row-actions">
                       {!a.primary && (
-                        <button className="ap-btn-ghost ap-btn-sm" type="button" onClick={() => setPrimary(a.id)}>Set Primary</button>
+                        <button className="ap-btn-ghost ap-btn-sm ap-btn-interactive" type="button" onClick={() => setPrimary(a.id)}>Set Primary</button>
                       )}
-                      <button className="ap-icon-btn delete" type="button" onClick={() => removeAddress(a.id)} title="Delete">🗑️</button>
+                      <button className="ap-icon-btn delete ap-btn-interactive" type="button" onClick={() => removeAddress(a.id)} title="Delete">🗑️</button>
                     </div>
                   </li>
                 ))}
@@ -310,7 +376,7 @@ export default function SettingsTab() {
                   </div>
                 </div>
                 <div className="ap-form-actions">
-                  <button className="ap-btn-primary" type="submit">+ Add Address</button>
+                  <button className="ap-btn-primary ap-btn-interactive" type="submit">+ Add Address</button>
                 </div>
               </form>
             </div>
@@ -340,7 +406,7 @@ export default function SettingsTab() {
                 </div>
                 {pwdMsg && <p className="ap-pwd-error">{pwdMsg}</p>}
                 <div className="ap-form-actions">
-                  <button className="ap-btn-primary" type="submit">Update Password</button>
+                  <button className="ap-btn-primary ap-btn-interactive" type="submit">Update Password</button>
                 </div>
               </form>
 
@@ -394,11 +460,53 @@ export default function SettingsTab() {
                 ))}
               </ul>
               <div className="ap-form-actions">
-                <button className="ap-btn-primary" type="button" onClick={() => flashSaved('Preferences saved.')}>
+                <button className="ap-btn-primary ap-btn-interactive" type="button" onClick={() => flashSaved('Preferences saved.')}>
                   Save Preferences
                 </button>
                 <span className="ap-settings-autosave-hint">✓ Toggles save instantly</span>
               </div>
+            </div>
+          )}
+
+          {/* ── APPEARANCE ── */}
+          {section === 'appearance' && (
+            <div className="ap-panel">
+              <div className="ap-panel-header">
+                <h3>Appearance</h3>
+                <span className="ap-panel-sub">Choose your preferred color theme</span>
+              </div>
+              <div className="ap-theme-grid">
+                {THEMES.map(t => (
+                  <button
+                    key={t.key}
+                    className={`ap-theme-card ap-btn-interactive ${activeTheme === t.key ? 'active' : ''}`}
+                    onClick={() => handleThemeChange(t.key)}
+                    type="button"
+                  >
+                    <div className={`ap-theme-preview ap-theme-preview-${t.key}`}>
+                      <div className="ap-theme-preview-bar" />
+                      <div className="ap-theme-preview-content">
+                        <div className="ap-theme-preview-line long" />
+                        <div className="ap-theme-preview-line short" />
+                        <div className="ap-theme-preview-line medium" />
+                      </div>
+                    </div>
+                    <div className="ap-theme-info">
+                      <span className="ap-theme-icon">{t.icon}</span>
+                      <div>
+                        <div className="ap-theme-label">{t.label}</div>
+                        <div className="ap-theme-desc">{t.desc}</div>
+                      </div>
+                    </div>
+                    {activeTheme === t.key && (
+                      <div className="ap-theme-active-badge">✓ Active</div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p className="ap-theme-note">
+                Theme is saved across sessions and applied globally to all admin pages.
+              </p>
             </div>
           )}
         </div>

@@ -233,3 +233,64 @@
   background: #dc2626;
   color: #fff;
 }
+
+/* ================================================================
+   SA — SMOOTH SCROLL & ANIMATIONS (inherited from AdminPage.css)
+   ================================================================ */
+
+/* SA-specific scrollable containers */
+.sa-root .ap-body,
+.sa-root .ap-nav,
+.sa-root .ap-table-wrap,
+.sa-root .sa-approval-list {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sa-gold) transparent;
+}
+.sa-root .ap-body::-webkit-scrollbar,
+.sa-root .ap-table-wrap::-webkit-scrollbar { width: 5px; }
+.sa-root .ap-body::-webkit-scrollbar-thumb,
+.sa-root .ap-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--sa-amber-mid);
+  border-radius: 100px;
+}
+
+/* SA tab content slide-in with gold tint */
+.sa-root .ap-tab-content {
+  animation: saTabIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes saTabIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Approval card hover lift */
+.sa-approval-card {
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease !important;
+}
+.sa-approval-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(180, 83, 9, 0.12);
+}
+
+/* SA stats + card hover lift */
+.sa-root .ap-stat-card:hover {
+  border-color: rgba(180, 83, 9, 0.3) !important;
+  box-shadow: 0 8px 24px rgba(180, 83, 9, 0.1) !important;
+}
+
+/* Dark / Black theme support for SA */
+[data-theme="dark"] .sa-root .ap-topbar,
+[data-theme="dark"] .sa-topbar { background: #1c1408 !important; }
+[data-theme="dark"] .sa-root .ap-panel { background: #1e1a12 !important; border-color: #3a2e18 !important; color: #f0d98c; }
+[data-theme="dark"] .sa-root .ap-notif-label { color: #f0d98c; }
+[data-theme="dark"] .sa-root .ap-notif-row { border-color: #3a2e18; }
+[data-theme="dark"] .sa-root .ap-panel h3,
+[data-theme="dark"] .sa-root .ap-panel h4 { color: #f0d98c; }
+
+[data-theme="black"] .sa-root .ap-topbar,
+[data-theme="black"] .sa-topbar { background: #000000 !important; }
+[data-theme="black"] .sa-root .ap-panel { background: #080400 !important; border-color: #1a1200 !important; color: #fbbf24; }
+[data-theme="black"] .sa-root .ap-notif-label { color: #fbbf24; }
+[data-theme="black"] .sa-root .ap-notif-row { border-color: #1a1200; }
+
