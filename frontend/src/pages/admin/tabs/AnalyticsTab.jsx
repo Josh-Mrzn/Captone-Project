@@ -208,8 +208,8 @@ export default function AnalyticsTab() {
     <div className="ap-tab-content">
       <div className="ap-page-header">
         <div>
-          <h2>Analytics</h2>
-          <span className="ap-page-sub">Sales performance, customer insights, and trends</span>
+          <h2>Data Analytics</h2>
+          <span className="ap-page-sub">Descriptive analytics — sales performance, customer insights, and trends</span>
         </div>
         <div className="ap-range-tabs">
           {['7d', '30d', '90d'].map(r => (

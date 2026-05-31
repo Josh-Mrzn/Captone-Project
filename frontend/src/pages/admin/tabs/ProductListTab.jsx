@@ -34,7 +34,7 @@ const SEED_PRODUCTS = [
   },
   {
     id: 4, name: 'Heirloom Black Rice', variety: 'Black Rice',
-    price: 140, stock: 0, unit: 'kg', status: 'Out of Stock',
+    price: 140, stock: 0, unit: 'kg', status: 'Inactive',
     description: 'Antioxidant-rich pirurutong, sourced from Cordillera farmers.',
     images: ['🌾'],
   },
@@ -156,7 +156,7 @@ export default function ProductListTab() {
   };
 
   const getStockBadge = (stock) => {
-    if (stock === 0) return { cls: 'ap-stock-out', label: 'Out of stock' };
+    if (stock === 0) return { cls: 'ap-stock-out', label: ' Inactive' };
     if (stock <= LOW_STOCK_THRESHOLD) return { cls: 'ap-stock-low', label: 'Low stock' };
     return { cls: 'ap-stock-ok', label: 'In stock' };
   };
@@ -196,7 +196,6 @@ export default function ProductListTab() {
             <option>All</option>
             <option>Active</option>
             <option>Inactive</option>
-            <option>Out of Stock</option>
           </select>
         </div>
       )}
@@ -243,7 +242,7 @@ export default function ProductListTab() {
               <div className="ap-form-field">
                 <label>Status</label>
                 <select value={prodForm.status} onChange={e => setProdForm(p => ({ ...p, status: e.target.value }))}>
-                  <option>Active</option><option>Inactive</option><option>Out of Stock</option>
+                  <option>Active</option><option>Inactive</option>
                 </select>
               </div>
             </div>

@@ -219,7 +219,7 @@ export default function SettingsTab() {
     <div className="ap-tab-content">
       <div className="ap-page-header">
         <div>
-          <h2>Settings</h2>
+          <h2>Account Info</h2>
           <span className="ap-page-sub">Manage your account, farm, and preferences — changes are saved automatically</span>
         </div>
       </div>

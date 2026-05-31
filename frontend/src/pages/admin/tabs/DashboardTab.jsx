@@ -1,39 +1,75 @@
 import React, { useMemo } from 'react';
 
 /**
- * WEB-02 Farmer Dashboard
- * Displays key metrics (total revenue, sales volume, pending orders, active products)
- * with quick access to common tasks and recent activity summary.
+ * Admin Dashboard
+ * KPI cards (Total Users, Sellers, Inventory, Sales) + Bar Graph
  */
 
-const STATS = [
-  { key: 'revenue',  icon: '💰', label: 'Total Revenue',  value: '₱248,560', delta: '+12.4% vs last month',  trend: 'up' },
-  { key: 'sales',    icon: '📊', label: 'Sales Volume',   value: '1,284 kg',   delta: '+8.1% this week',       trend: 'up' },
-  { key: 'pending',  icon: '🛒', label: 'Pending Orders', value: '14',          delta: '3 awaiting confirmation', trend: 'neutral' },
-  { key: 'products', icon: '📦', label: 'Active Products', value: '23',         delta: '2 low on stock',         trend: 'warn' },
+const KPI_CARDS = [
+  { key: 'users',     icon: '👥', label: 'Total Users',    value: '1,284',   delta: '+34 this month',    trend: 'up',      color: '#43a047' },
+  { key: 'sellers',   icon: '🏪', label: 'Sellers',         value: '148',     delta: '+8 new this week',  trend: 'up',      color: '#3b82f6' },
+  { key: 'inventory', icon: '📦', label: 'Inventory (kg)',  value: '24,360',  delta: '6 low-stock alerts',trend: 'warn',    color: '#f9a825' },
+  { key: 'sales',     icon: '💰', label: 'Total Sales',     value: '₱248,560',delta: '+12.4% vs last mo.',trend: 'up',      color: '#a855f7' },
 ];
 
-const QUICK_ACTIONS = [
-  { icon: '➕', label: 'Add Product',     desc: 'List a new rice variety', target: 'Product List' },
-  { icon: '📦', label: 'View Orders',     desc: 'Review pending orders',  target: 'Orders' },
-  { icon: '💬', label: 'Reply to Buyers', desc: '4 unread messages',     target: 'Messages' },
-  { icon: '📈', label: 'View Analytics',  desc: 'Sales trends & insights', target: 'Analytics' },
+// Monthly sales bar chart data
+const BAR_DATA = [
+  { label: 'Jan', value: 112000 },
+  { label: 'Feb', value: 134000 },
+  { label: 'Mar', value: 98000  },
+  { label: 'Apr', value: 162000 },
+  { label: 'May', value: 148000 },
+  { label: 'Jun', value: 175000 },
+  { label: 'Jul', value: 131000 },
+  { label: 'Aug', value: 158000 },
+  { label: 'Sep', value: 183000 },
+  { label: 'Oct', value: 196000 },
+  { label: 'Nov', value: 210000 },
+  { label: 'Dec', value: 248560 },
 ];
 
-const RECENT_ACTIVITY = [
-  { type: 'order',   icon: '🛒', msg: 'New order #1042 — 25kg Jasmine Rice from Maria Santos', time: '5m ago' },
-  { type: 'payment', icon: '💳', msg: 'Payment received for Order #1041 (₱2,800 via GCash)',  time: '24m ago' },
-  { type: 'message', icon: '💬', msg: 'Jose Reyes sent you a message about Order #1039',     time: '1h ago' },
-  { type: 'stock',   icon: '⚠️', msg: 'Brown Rice (Premium) is running low — only 12kg left', time: '3h ago' },
-  { type: 'order',   icon: '🛒', msg: 'Order #1040 marked as Delivered',                     time: '6h ago' },
-];
+const fmtMoney = (n) => `₱${(n / 1000).toFixed(0)}k`;
 
-const TYPE_TONE = {
-  order:   'tone-green',
-  payment: 'tone-gold',
-  message: 'tone-blue',
-  stock:   'tone-red',
-};
+function SalesBarChart({ data }) {
+  const max = Math.max(...data.map(d => d.value));
+  const w = 640, h = 200, padX = 36, padY = 16, barGap = 6;
+  const barW = (w - padX * 2) / data.length - barGap;
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h + 28}`} className="ap-chart-svg" style={{ width: '100%', height: 'auto' }}>
+      {/* Y-axis grid lines */}
+      {[0.25, 0.5, 0.75, 1].map(t => {
+        const y = padY + (h - padY * 2) * (1 - t);
+        return (
+          <g key={t}>
+            <line x1={padX} x2={w - padX} y1={y} y2={y} stroke="#e2e8f0" strokeDasharray="3 3" />
+            <text x={padX - 4} y={y + 4} textAnchor="end" fontSize="9" fill="#94a3b8">{fmtMoney(max * t)}</text>
+          </g>
+        );
+      })}
+      {/* Bars */}
+      {data.map((d, i) => {
+        const barH = ((d.value / max) * (h - padY * 2));
+        const x = padX + i * (barW + barGap);
+        const y = padY + (h - padY * 2) - barH;
+        const isLast = i === data.length - 1;
+        return (
+          <g key={d.label}>
+            <rect
+              x={x} y={y} width={barW} height={barH}
+              rx="3"
+              fill={isLast ? '#43a047' : '#86efac'}
+              opacity={isLast ? 1 : 0.75}
+            />
+            <text x={x + barW / 2} y={h + padY + 12} textAnchor="middle" fontSize="9" fill="#64748b">{d.label}</text>
+          </g>
+        );
+      })}
+      {/* Axis line */}
+      <line x1={padX} x2={w - padX} y1={h - padY + padY} y2={h - padY + padY} stroke="#cbd5e1" />
+    </svg>
+  );
+}
 
 export default function DashboardTab({ user, setActiveTab }) {
   const today = useMemo(
@@ -42,8 +78,6 @@ export default function DashboardTab({ user, setActiveTab }) {
     }),
     []
   );
-
-  const goTo = (tab) => () => setActiveTab && setActiveTab(tab);
 
   return (
     <div className="ap-tab-content">
@@ -55,67 +89,37 @@ export default function DashboardTab({ user, setActiveTab }) {
         </div>
       </div>
 
-      {/* Stats grid */}
+      {/* KPI Cards */}
       <div className="ap-stats-grid">
-        {STATS.map((s) => (
-          <div className="ap-stat-card ap-stat-rich" key={s.key}>
+        {KPI_CARDS.map((s) => (
+          <div className="ap-stat-card ap-stat-rich" key={s.key} style={{ borderTop: `3px solid ${s.color}` }}>
             <div className="ap-stat-card-top">
-              <div className="ap-stat-icon">{s.icon}</div>
+              <div className="ap-stat-icon" style={{ fontSize: '1.5rem' }}>{s.icon}</div>
               <span className={`ap-stat-trend ap-stat-trend-${s.trend}`}>
                 {s.trend === 'up' ? '↑' : s.trend === 'warn' ? '⚠' : '•'}
               </span>
             </div>
             <div className="ap-stat-label">{s.label}</div>
-            <div className="ap-stat-value-rich">{s.value}</div>
+            <div className="ap-stat-value-rich" style={{ color: s.color }}>{s.value}</div>
             <div className="ap-stat-delta">{s.delta}</div>
           </div>
         ))}
       </div>
 
-      {/* Two-column: Quick actions + Recent activity */}
-      <div className="ap-dashboard-grid">
-        <section className="ap-panel">
-          <div className="ap-panel-header">
-            <h3>Quick Actions</h3>
-            <span className="ap-panel-sub">Jump straight to common tasks</span>
-          </div>
-          <div className="ap-quick-grid">
-            {QUICK_ACTIONS.map((a) => (
-              <button
-                key={a.label}
-                className="ap-quick-card"
-                onClick={goTo(a.target)}
-                type="button"
-              >
-                <div className="ap-quick-icon">{a.icon}</div>
-                <div className="ap-quick-text">
-                  <span className="ap-quick-label">{a.label}</span>
-                  <span className="ap-quick-desc">{a.desc}</span>
-                </div>
-                <span className="ap-quick-arrow">→</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="ap-panel">
-          <div className="ap-panel-header">
-            <h3>Recent Activity</h3>
-            <span className="ap-panel-sub">Last 24 hours</span>
-          </div>
-          <ul className="ap-activity-list">
-            {RECENT_ACTIVITY.map((a, i) => (
-              <li className="ap-activity-item" key={i}>
-                <span className={`ap-activity-icon ${TYPE_TONE[a.type]}`}>{a.icon}</span>
-                <div className="ap-activity-body">
-                  <p className="ap-activity-msg">{a.msg}</p>
-                  <span className="ap-activity-time">{a.time}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      {/* Monthly Sales Bar Chart */}
+      <section className="ap-panel">
+        <div className="ap-panel-header">
+          <h3>Monthly Sales Overview</h3>
+          <span className="ap-panel-sub">Revenue trend for the current year</span>
+        </div>
+        <div style={{ padding: '0.5rem 0.5rem 0' }}>
+          <SalesBarChart data={BAR_DATA} />
+        </div>
+        <div style={{ display: 'flex', gap: '1.5rem', padding: '0.75rem 1rem', borderTop: '1px solid #f1f5f9', fontSize: '0.82rem', color: '#64748b' }}>
+          <span><span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: 2, background: '#43a047', marginRight: 4 }} />Current Month</span>
+          <span><span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: 2, background: '#86efac', marginRight: 4 }} />Previous Months</span>
+        </div>
+      </section>
     </div>
   );
 }

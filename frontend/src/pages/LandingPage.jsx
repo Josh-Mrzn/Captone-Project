@@ -168,10 +168,7 @@ export default function LandingPage() {
                 Go to Dashboard →
               </button>
             ) : (
-              <>
-                <button className="lp-nav-ghost" onClick={() => navigate('/register')}>Sign Up</button>
-                <button className="lp-nav-cta"   onClick={() => navigate('/login')}>Sign In</button>
-              </>
+              <button className="lp-nav-cta" onClick={() => navigate('/login')}>Sign In</button>
             )}
           </div>
 
@@ -197,10 +194,7 @@ export default function LandingPage() {
                 Go to Dashboard →
               </button>
             ) : (
-              <>
-                <button onClick={() => { navigate('/register'); setMenuOpen(false); }}>Sign Up</button>
-                <button className="lp-nav-cta" onClick={() => { navigate('/login'); setMenuOpen(false); }}>Sign In</button>
-              </>
+              <button className="lp-nav-cta" onClick={() => { navigate('/login'); setMenuOpen(false); }}>Sign In</button>
             )}
           </div>
         )}
@@ -214,7 +208,6 @@ export default function LandingPage() {
           <div className="lp-orb lp-orb3" />
         </div>
         <div className="lp-hero-content lp-hero-content-centered">
-          <div className="lp-hero-badge">Admin Management System</div>
           <h1 className="lp-hero-title">
             Manage Your
             <br />

@@ -56,13 +56,13 @@ export default function AdminPage({ onLogout }) {
   // ── Tab renderer ──────────────────────────────────────
   const renderTab = () => {
     switch (activeTab) {
-      case 'Dashboard':    return <DashboardTab user={user} setActiveTab={setActiveTab} />;
-      case 'Product List': return <ProductListTab />;
-      case 'Orders':       return <OrdersTab />;
-      case 'Analytics':    return <AnalyticsTab />;
-      case 'Messages':     return <MessagesTab />;
-      case 'Settings':     return <SettingsTab />;
-      default:             return null;
+      case 'Dashboard':       return <DashboardTab user={user} setActiveTab={setActiveTab} />;
+      case 'Product List':    return <ProductListTab />;
+      case 'Orders':          return <OrdersTab />;
+      case 'Data Analytics':  return <AnalyticsTab />;
+      case 'Messages':        return <MessagesTab />;
+      case 'Account Info':    return <SettingsTab />;
+      default:                return null;
     }
   };
 

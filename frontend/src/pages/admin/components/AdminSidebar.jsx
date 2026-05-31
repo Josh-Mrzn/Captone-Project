@@ -1,13 +1,13 @@
 import React from 'react';
 
-const TABS = ['Dashboard', 'Product List', 'Orders', 'Analytics', 'Messages', 'Settings'];
+const TABS = ['Dashboard', 'Product List', 'Orders', 'Data Analytics', 'Messages', 'Account Info'];
 const TAB_ICONS = {
-  Dashboard:      '🏠',
-  'Product List': '📦',
-  Orders:         '🛒',
-  Analytics:      '📈',
-  Messages:       '💬',
-  Settings:       '⚙️',
+  Dashboard:        '🏠',
+  'Product List':   '📦',
+  Orders:           '🛒',
+  'Data Analytics': '📊',
+  Messages:         '💬',
+  'Account Info':   '👤',
 };
 
 const TAB_BADGES = {
