@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { authRepository } from '../repositories/authRepository.js';
 import { getFirebaseAuth } from '../config/firebase.js';
 import LoginSession from '../models/LoginSession.js';
+import { emailVerificationService } from './passwordResetService.js';
 
 function signToken(user) {
   const secret = process.env.JWT_SECRET;
@@ -187,7 +188,7 @@ async function syncEmailVerifiedFromFirebase(user) {
 }
 
 export const authService = {
-  async register({ name, email, password, role: requestedRole }) {
+  async register({ name, email, password, role: requestedRole }, requestMeta = {}) {
     const cleanName = typeof name === 'string' ? name.trim() : '';
     const cleanEmail = normalizeEmail(email);
 
@@ -287,13 +288,23 @@ export const authService = {
       throw new Error(err.message || 'Could not save your account. Please try again.');
     }
 
+    // The mobile app collects six digits; the web opens a link. Send whichever
+    // the caller can actually complete — a link is a dead end on a phone, and a
+    // code is a dead end on a web page with no box to type it into.
+    const wantsOtp = requestMeta.client === 'mobile';
+
     try {
-      await sendFirebaseVerificationEmail(firebaseUid, cleanEmail);
+      if (wantsOtp) {
+        await emailVerificationService.sendSignupOtp(newUser);
+      } else {
+        await sendFirebaseVerificationEmail(firebaseUid, cleanEmail);
+      }
     } catch (err) {
       console.error('Verification email failed:', err.message);
       // Account exists — ask user to resend from the UI
       return {
         ...toUserResponse(newUser),
+        verificationMethod: wantsOtp ? 'otp' : 'link',
         verificationEmailSent: false,
         verificationError: err.message
       };
@@ -301,11 +312,12 @@ export const authService = {
 
     return {
       ...toUserResponse(newUser),
+      verificationMethod: wantsOtp ? 'otp' : 'link',
       verificationEmailSent: true
     };
   },
 
-  async resendVerification({ email }) {
+  async resendVerification({ email }, requestMeta = {}) {
     const cleanEmail = normalizeEmail(email);
     if (!cleanEmail) throw new Error('Email is required');
 
@@ -320,8 +332,13 @@ export const authService = {
       throw new Error('This email is already verified. You can sign in.');
     }
 
+    if (requestMeta.client === 'mobile') {
+      await emailVerificationService.sendSignupOtp(user);
+      return { sent: true, verificationMethod: 'otp' };
+    }
+
     await sendFirebaseVerificationEmail(user.firebaseUid, user.email);
-    return { sent: true };
+    return { sent: true, verificationMethod: 'link' };
   },
 
   async login({ email, password }, requestMeta = {}) {

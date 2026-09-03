@@ -1,5 +1,5 @@
 import { authService } from '../services/authService.js';
-import { passwordResetService } from '../services/passwordResetService.js';
+import { passwordResetService, emailVerificationService } from '../services/passwordResetService.js';
 import { getIo } from '../sockets/socket.js';
 
 /** Never let the client fall back to a bare "Login failed" - always send real text. */
@@ -13,7 +13,7 @@ function fail(res, status, err, fallback) {
 
 export const register = async (req, res) => {
   try {
-    const user = await authService.register(req.body);
+    const user = await authService.register(req.body, { client: req.headers['x-client'] });
 
     res.status(201).json({
       success: true,
@@ -30,7 +30,7 @@ export const register = async (req, res) => {
 
 export const resendVerification = async (req, res) => {
   try {
-    const result = await authService.resendVerification(req.body);
+    const result = await authService.resendVerification(req.body, { client: req.headers['x-client'] });
     return res.status(200).json({
       success: true,
       message: 'If that account exists, a verification email was sent.',
@@ -124,5 +124,14 @@ export const resetPassword = async (req, res) => {
     return res.status(200).json({ success: true, ...result });
   } catch (err) {
     return fail(res, 400, err, 'Could not reset the password');
+  }
+};
+
+export const verifyEmailOtp = async (req, res) => {
+  try {
+    const result = await emailVerificationService.verifySignupOtp(req.body);
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    return fail(res, 400, err, 'Could not verify that code');
   }
 };

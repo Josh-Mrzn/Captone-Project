@@ -5,6 +5,7 @@ import {
   login,
   logout,
   resendVerification,
+  verifyEmailOtp,
   forgotPassword,
   verifyResetOtp,
   resetPassword
@@ -16,6 +17,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
 router.post('/resend-verification', resendVerification);
+router.post('/verify-email-otp', passwordLimiter, verifyEmailOtp);
 
 // Guessing a 6-digit code is cheap without a limiter, so every step of the
 // reset flow sits behind the same one the change-password route uses.
