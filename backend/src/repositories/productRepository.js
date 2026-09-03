@@ -9,8 +9,11 @@ export const productRepository = {
     const query = {};
 
     // Apply filters
-    if (filters.category) {
-      query.category = filters.category;
+    // The schema field is `variety`; accepting `category` too keeps the mobile
+    // app's own wording working without a second name in the database.
+    const variety = filters.variety || filters.category;
+    if (variety) {
+      query.variety = variety;
     }
     if (filters.status) {
       query.status = filters.status;
@@ -62,9 +65,9 @@ export const productRepository = {
     return await Product.findByIdAndDelete(id);
   },
 
-  // Get products by category
-  async getProductsByCategory(category) {
-    return await Product.find({ category }).sort({ createdAt: -1 });
+  // Get products by rice variety
+  async getProductsByCategory(variety) {
+    return await Product.find({ variety }).sort({ createdAt: -1 });
   },
 
   // Get low stock products

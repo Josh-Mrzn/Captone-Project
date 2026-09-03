@@ -40,6 +40,15 @@ export const decrementStock = async (productId, qty) => {
   );
 };
 
+/** Never lets the tally fall below zero, however the order history is edited. */
+export const bumpSoldCount = async (productId, delta) => {
+  const product = await Product.findById(productId).select('soldCount');
+  if (!product) return null;
+
+  const next = Math.max(0, (product.soldCount || 0) + delta);
+  return await Product.findByIdAndUpdate(productId, { soldCount: next }, { new: true });
+};
+
 export const incrementStock = async (productId, qty) => {
   return await Product.findOneAndUpdate(
     { _id: productId },

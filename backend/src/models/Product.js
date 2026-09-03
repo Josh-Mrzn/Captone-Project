@@ -48,6 +48,16 @@ const productSchema = new mongoose.Schema({
     min: 0,
     default: 20,
   },
+  /**
+   * Units actually sold. Moves with `stockDeducted` on the order, so a
+   * confirmed order counts and a cancelled one gives the count back — a
+   * checkout that never ships must not inflate this.
+   */
+  soldCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   weightTiers: {
     type: [weightTierSchema],
     default: [],

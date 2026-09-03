@@ -242,12 +242,14 @@ export const updateOrderStatus = async (orderId, sellerId, status, reason) => {
       resultingStock: updated.stock,
       note: `Order ${order.orderNumber} confirmed`,
     });
+    await adminRepo.bumpSoldCount(order.productId, order.quantity);
     order.stockDeducted = true;
     await maybeNotifyLowStock(sellerId, { _id: order.productId });
   }
 
   // Restock if cancelling an order that had already taken stock out.
   if (status === 'cancelled' && order.stockDeducted) {
+    await adminRepo.bumpSoldCount(order.productId, -order.quantity);
     const updated = await adminRepo.incrementStock(order.productId, order.quantity);
     if (updated) {
       await inventoryRepo.logMovement({

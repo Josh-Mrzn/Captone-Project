@@ -1,5 +1,25 @@
 // src/services/productService.js
 import { productRepository } from '../repositories/productRepository.js';
+import { getRatingMapForProducts } from '../repositories/reviewRepository.js';
+
+const NO_RATING = { averageRating: 0, reviewCount: 0 };
+
+/**
+ * Ratings live in the Review collection, but every client wants them on the
+ * product itself. Merging here means the mobile app and the web read the same
+ * shape and neither has to make a second call per product.
+ */
+async function withRatings(products) {
+  const list = Array.isArray(products) ? products : [products];
+  const ratings = await getRatingMapForProducts(list.map((p) => p._id));
+
+  const merged = list.map((product) => ({
+    ...(product.toObject ? product.toObject() : product),
+    ...(ratings.get(String(product._id)) || NO_RATING),
+  }));
+
+  return Array.isArray(products) ? merged : merged[0];
+}
 
 export const productService = {
 
@@ -9,7 +29,8 @@ export const productService = {
       throw new Error('Page and limit must be positive numbers');
     }
 
-    return await productRepository.getAllProducts(page, limit, filters);
+    const result = await productRepository.getAllProducts(page, limit, filters);
+    return { ...result, products: await withRatings(result.products) };
   },
 
   // Get product by ID
@@ -23,15 +44,16 @@ export const productService = {
       throw new Error('Product not found');
     }
 
-    return product;
+    return await withRatings(product);
   },
 
   // Create new product
   async createProduct(productData) {
-    const { name, category, price, stock } = productData;
+    const { name, variety, category, price, stock } = productData;
+    const riceVariety = variety || category;
 
-    if (!name || !category || price === undefined || stock === undefined) {
-      throw new Error('Name, category, price, and stock are required');
+    if (!name || !riceVariety || price === undefined || stock === undefined) {
+      throw new Error('Name, variety, price, and stock are required');
     }
 
     if (price < 0) {
@@ -42,7 +64,7 @@ export const productService = {
       throw new Error('Stock cannot be negative');
     }
 
-    return await productRepository.createProduct(productData);
+    return await productRepository.createProduct({ ...productData, variety: riceVariety });
   },
 
   // Update product
@@ -89,7 +111,7 @@ export const productService = {
       throw new Error('Category is required');
     }
 
-    return await productRepository.getProductsByCategory(category);
+    return await withRatings(await productRepository.getProductsByCategory(category));
   },
 
   // Get low stock products
@@ -121,6 +143,6 @@ export const productService = {
       throw new Error('Search term is required');
     }
 
-    return await productRepository.searchProducts(searchTerm);
+    return await withRatings(await productRepository.searchProducts(searchTerm));
   }
 };

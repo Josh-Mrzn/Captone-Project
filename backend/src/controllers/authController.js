@@ -1,4 +1,5 @@
 import { authService } from '../services/authService.js';
+import { passwordResetService } from '../services/passwordResetService.js';
 import { getIo } from '../sockets/socket.js';
 
 /** Never let the client fall back to a bare "Login failed" - always send real text. */
@@ -87,4 +88,41 @@ export const logout = (req, res) => {
     success: true,
     message: 'Logged out successfully'
   });
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    await passwordResetService.requestOtp(req.body);
+  } catch (err) {
+    // Config and rate-limit problems are real failures the caller must see.
+    // A missing account is not - that answer would leak who is registered.
+    return fail(res, 400, err, 'Could not send the reset code');
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: 'If that account exists, a 6-digit code is on its way to that email.'
+  });
+};
+
+export const verifyResetOtp = async (req, res) => {
+  try {
+    const result = await passwordResetService.verifyOtp(req.body);
+    return res.status(200).json({
+      success: true,
+      message: 'Code accepted. You can set a new password now.',
+      ...result
+    });
+  } catch (err) {
+    return fail(res, 400, err, 'Could not verify that code');
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const result = await passwordResetService.resetPassword(req.body);
+    return res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    return fail(res, 400, err, 'Could not reset the password');
+  }
 };

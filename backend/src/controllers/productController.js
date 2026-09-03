@@ -6,7 +6,9 @@ export const getAllProducts = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const filters = {
-      category: req.query.category,
+      // `variety` is the schema's own word; `category` stays accepted so the
+      // mobile app's wording keeps working.
+      variety: req.query.variety || req.query.category,
       status: req.query.status,
       search: req.query.search
     };

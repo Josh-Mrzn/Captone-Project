@@ -18,6 +18,26 @@ export const findReviewableOrder = async (orderId, buyerUserId) =>
   Order.findOne({ _id: orderId, buyerUserId, status: 'completed' });
 
 /** Star breakdown plus the average, for a product or a whole seller. */
+/**
+ * One aggregate for a whole page of products. Asking per product turns a
+ * 20-item catalog into 21 round trips.
+ */
+export const getRatingMapForProducts = async (productIds) => {
+  if (!productIds?.length) return new Map();
+
+  const rows = await Review.aggregate([
+    { $match: { productId: { $in: productIds } } },
+    { $group: { _id: '$productId', average: { $avg: '$rating' }, count: { $sum: 1 } } },
+  ]);
+
+  return new Map(
+    rows.map((row) => [
+      String(row._id),
+      { averageRating: Math.round(row.average * 10) / 10, reviewCount: row.count },
+    ])
+  );
+};
+
 export const getRatingSummary = async (match) => {
   const [totals] = await Review.aggregate([
     { $match: { ...match, hidden: false } },
