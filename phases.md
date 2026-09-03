@@ -84,9 +84,9 @@ Walang saysay ang lahat ng susunod kung hindi makakapasok sa repo ang trabaho.
 Dalawang client ang kakain sa iisang API. Kapag hindi natin pinagkasunduan ang hugis
 ng data ngayon, dalawang beses nating aayusin mamaya.
 
-- [ ] Pumili ng iisang pangalan: `variety` (backend) o `category` (mobile)
-- [ ] Ilabas ang `averageRating` sa product response, kinuha mula sa Review model
-- [ ] Desisyunan ang `soldCount` at `tag` — wala ang mga ito sa Product model
+- [x] Pumili ng iisang pangalan: `variety` (backend) o `category` (mobile)
+- [x] Ilabas ang `averageRating` sa product response, kinuha mula sa Review model
+- [x] Desisyunan ang `soldCount` at `tag` — wala ang mga ito sa Product model
 - [ ] Isulat ang eksaktong response shape ng `GET /api/products/:id` bilang sanggunian ng dalawa
 
 **Tapos kapag:** may nakasulat na kontrata na kayang sundin ng mobile at web nang
@@ -100,11 +100,11 @@ hindi nagtatanong.
 Ang layunin dito ay isang matagumpay na request — kahit isa lang. Doon mapapatunayan
 na kayang abutin ng app ang server mo.
 
-- [ ] Idagdag sa `pubspec.yaml`: `http`, `flutter_secure_storage`, `provider`, `cached_network_image`, `intl`
-- [ ] Gawin ang `lib/services/api_client.dart` — base URL at awtomatikong `Authorization: Bearer`
-- [ ] Ilipat ang `INTERNET` permission sa `main/AndroidManifest.xml` — nasa `debug/` lang ito ngayon, kaya patay ang release build
-- [ ] Magdagdag ng network security config para sa `http://` habang dev — hinaharangan ito ng Android 9 pataas
-- [ ] Base URL: `10.0.2.2:8080` sa emulator, LAN IP sa totoong telepono
+- [x] Idagdag sa `pubspec.yaml`: `http`, `flutter_secure_storage`, `provider`, `cached_network_image`, `intl`
+- [x] Gawin ang `lib/services/api_client.dart` — base URL at awtomatikong `Authorization: Bearer`
+- [x] Ilipat ang `INTERNET` permission sa `main/AndroidManifest.xml` — nasa `debug/` lang ito ngayon, kaya patay ang release build
+- [x] Magdagdag ng network security config para sa `http://` habang dev — hinaharangan ito ng Android 9 pataas
+- [x] Base URL: `10.0.2.2:8080` sa emulator, LAN IP sa totoong telepono
 
 **Tapos kapag:** may isang screen na kumukuha ng totoong `GET /api/products` at
 nakikita ang laman ng database.
@@ -216,14 +216,16 @@ Walang ganitong field ang Product model sa backend.
 - Dagdagan ang Product ng `soldCount`, itaas tuwing may checkout
 - Tanggalin sa UI at gawing pandekorasyon na lang ang badge
 
-### 02 — Paano ang forgot password at OTP?
+### 02 — Paano ang forgot password at OTP? ✅ NAPAGDESISYUNAN
 
-Walang endpoint para dito sa `authRoutes`, at peke pa ang screen sa web. Iisang
-desisyon, dalawang client ang kikita.
+**Sariling endpoint sa backend, gamit ang nodemailer.** Iisang flow para sa web at
+mobile, at tugma sa `otp_verification_screen.dart` na meron na.
 
-- Ipasa sa Firebase Auth — kaya na nitong magpadala ng password reset
-- Gumawa ng sariling endpoint sa backend, may sariling padalang email
-- Ilabas muna sa scope at tanggalin ang mga screen bago ang defense
+Tapos na at nasubukan:
+
+- `POST /api/auth/forgot-password` — `{ email }`, magpapadala ng 6-digit code
+- `POST /api/auth/verify-reset-otp` — `{ email, code }` → `resetToken`
+- `POST /api/auth/reset-password` — `{ resetToken, newPassword }`
 
 ---
 
