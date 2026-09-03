@@ -1,21 +1,54 @@
-// src/repositories/authRepository.js
 import User from '../models/User.js';
 
+async function getNextUserId() {
+  const lastUser = await User.findOne({ userId: { $type: 'number' } })
+    .sort({ userId: -1 })
+    .select('userId')
+    .lean();
+
+  return lastUser?.userId ? lastUser.userId + 1 : 1;
+}
+
 export const authRepository = {
-
-  // Find user by email (include password for login)
   async findByEmail(email) {
-    return await User.findOne({ email }).select('+password');
+    return User.findOne({ email }).select('+password');
   },
 
-  // Create new user
+  async findByFirebaseUid(firebaseUid) {
+    return User.findOne({ firebaseUid }).select('+password');
+  },
+
+  async findByUserId(userId) {
+    return User.findOne({ userId }).select('-password');
+  },
+
   async createUser(userData) {
-    const user = new User(userData);
-    return await user.save();
+    if (userData.userId != null) {
+      return new User(userData).save();
+    }
+
+    // getNextUserId() is a read-then-write, so two concurrent signups can pick the
+    // same number. Retry on the resulting duplicate-key error instead of failing.
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        const userId = await getNextUserId();
+        return await new User({ ...userData, userId }).save();
+      } catch (err) {
+        const isUserIdClash = err?.code === 11000 && 'userId' in (err.keyPattern || {});
+        if (!isUserIdClash || attempt === 4) throw err;
+      }
+    }
   },
 
-  // Find user by ID (without password - for profile etc.)
   async findById(id) {
-    return await User.findById(id).select('-password');
+    return User.findById(id).select('-password');
+  },
+
+  async updateLastLogin(userId) {
+    return User.findOneAndUpdate(
+      { userId },
+      { lastLogin: new Date() },
+      { new: true }
+    ).select('-password');
   }
 };

@@ -1,19 +1,115 @@
 import bcrypt from 'bcryptjs';
 import {
   findUserByUserId,
+  findUserByUserIdSafe,
   updateUserByUserId,
   updatePasswordByUserId
 } from '../repositories/userRepository.js';
+import LoginSession from '../models/LoginSession.js';
+
+// ====================== GET CURRENT USER ======================
+export const getMeService = async (userId) => {
+  return await findUserByUserIdSafe(userId);
+};
 
 // ====================== UPDATE PROFILE ======================
-export const updateProfileService = async (userId, updateData) => {
-  const allowedFields = ['name', 'email'];
+const FLAT_FIELDS = ['name', 'email', 'contact', 'bio', 'pickupAddress', 'deliveryOrigin', 'theme', 'sellerType'];
 
+export const updateProfileService = async (userId, updateData, uploadedFiles = {}) => {
   const filteredData = {};
-  for (const key of allowedFields) {
-    if (updateData[key]) {
+  for (const key of FLAT_FIELDS) {
+    if (updateData[key] !== undefined) {
       filteredData[key] = updateData[key];
     }
+  }
+
+  if (updateData.sellerProfile) {
+    let incoming = updateData.sellerProfile;
+    if (typeof incoming === 'string') {
+      try { incoming = JSON.parse(incoming); } catch { incoming = {}; }
+    }
+    const current = await findUserByUserId(userId);
+    filteredData.sellerProfile = { ...(current?.sellerProfile?.toObject?.() || current?.sellerProfile || {}), ...incoming };
+    if (uploadedFiles.farmPhotos?.length) {
+      const newPhotos = uploadedFiles.farmPhotos.map((f) => `/uploads/media/${f.filename}`);
+      const existing = filteredData.sellerProfile.farmPhotos || [];
+      filteredData.sellerProfile.farmPhotos = [...existing, ...newPhotos].slice(0, 5);
+    }
+  }
+
+  if (updateData.notificationPrefs) {
+    let incoming = updateData.notificationPrefs;
+    if (typeof incoming === 'string') {
+      try { incoming = JSON.parse(incoming); } catch { incoming = {}; }
+    }
+    const current = await findUserByUserId(userId);
+    filteredData.notificationPrefs = { ...(current?.notificationPrefs?.toObject?.() || current?.notificationPrefs || {}), ...incoming };
+  }
+
+  if (uploadedFiles.avatar?.[0]) {
+    filteredData.avatarUrl = `/uploads/media/${uploadedFiles.avatar[0].filename}`;
+  }
+
+  // --- Payout (GCash QR) ---
+  // Any edit resets the record to `pending`: a verified QR that silently changes
+  // would send buyers' money somewhere a Super Admin never checked.
+  if (updateData.payout || uploadedFiles.paymentQr?.[0]) {
+    let incoming = updateData.payout || {};
+    if (typeof incoming === 'string') {
+      try { incoming = JSON.parse(incoming); } catch { incoming = {}; }
+    }
+
+    const current = await findUserByUserId(userId);
+    const existing = current?.payout?.toObject?.() || current?.payout || {};
+
+    const next = {
+      ...existing,
+      ...incoming,
+      status: 'pending',
+      rejectionReason: '',
+      submittedAt: new Date(),
+      verifiedAt: null,
+      verifiedBy: null,
+    };
+
+    if (uploadedFiles.paymentQr?.[0]) {
+      next.qrImage = `/api/files/${uploadedFiles.paymentQr[0].filename}`;
+    }
+
+    if (!next.qrImage && !next.accountNumber) {
+      throw new Error('Add a GCash number or upload a QR code before saving payout details.');
+    }
+    if (!next.accountName) {
+      throw new Error('Account name is required so buyers can confirm they are paying the right person.');
+    }
+
+    filteredData.payout = next;
+  }
+
+  // --- Compliance documents ---
+  if (uploadedFiles.document?.[0]) {
+    const meta = typeof updateData.documentMeta === 'string'
+      ? JSON.parse(updateData.documentMeta || '{}')
+      : (updateData.documentMeta || {});
+
+    if (!meta.type) throw new Error('Choose which document you are uploading.');
+
+    const current = await findUserByUserId(userId);
+    const existing = (current?.documents || []).map((d) => d.toObject?.() || d);
+
+    filteredData.documents = [
+      // One live document per type: a re-upload replaces the old one.
+      ...existing.filter((d) => d.type !== meta.type),
+      {
+        type: meta.type,
+        file: `/api/files/${uploadedFiles.document[0].filename}`,
+        label: meta.label || '',
+        referenceNo: meta.referenceNo || '',
+        status: 'pending',
+        rejectionReason: '',
+        uploadedAt: new Date(),
+      },
+    ];
   }
 
   if (Object.keys(filteredData).length === 0) {
@@ -24,11 +120,7 @@ export const updateProfileService = async (userId, updateData) => {
 
   if (!user) throw new Error('User not found');
 
-  return {
-    userId: user.userId,
-    name: user.name,
-    email: user.email
-  };
+  return user;
 };
 
 // ====================== UPDATE PASSWORD ======================
@@ -48,6 +140,9 @@ export const updatePasswordService = async (
   const user = await findUserByUserId(userId);
 
   if (!user) throw new Error('User not found');
+  if (!user.password) {
+    throw new Error('This account signs in through Google/Firebase and has no password to change here.');
+  }
 
   const isMatch = await bcrypt.compare(currentPassword, user.password);
 
@@ -64,4 +159,12 @@ export const updatePasswordService = async (
   await updatePasswordByUserId(userId, hashedPassword);
 
   return { message: 'Password updated successfully' };
+};
+
+// ====================== LOGIN HISTORY ======================
+export const getLoginHistoryService = async (userId) => {
+  const user = await findUserByUserId(userId);
+  if (!user) throw new Error('User not found');
+
+  return await LoginSession.find({ userId: user._id }).sort({ loggedInAt: -1 }).limit(20);
 };

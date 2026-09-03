@@ -44,5 +44,31 @@ export const createAuditLog = async (data) => {
 };
 
 export const createUser = async (userData) => {
-  return await User.create(userData);
+  const newUser = await User.create(userData);
+  const obj = newUser.toObject();
+  delete obj.password;
+  return obj;
+};
+
+export const findUsersByUserIds = async (ids) => {
+  return await User.find({ userId: { $in: ids } }).select('userId name email');
+};
+
+export const findAuditLogs = async ({ page = 1, limit = 20, action, adminId, from, to } = {}) => {
+  const filter = {};
+  if (action) filter.action = action;
+  if (adminId) filter.adminId = Number(adminId);
+  if (from || to) {
+    filter.createdAt = {};
+    if (from) filter.createdAt.$gte = new Date(from);
+    if (to) filter.createdAt.$lte = new Date(to);
+  }
+
+  const skip = (page - 1) * limit;
+  const [logs, total] = await Promise.all([
+    AdminAuditLog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    AdminAuditLog.countDocuments(filter),
+  ]);
+
+  return { logs, total, page, totalPages: Math.ceil(total / limit) || 1 };
 };

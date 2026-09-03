@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "543303922214",
+    "project_id": "agrifair-a9ac5",
+    "storage_bucket": "agrifair-a9ac5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:543303922214:android:c17c45bc876f864310ace7",
+        "android_client_info": {
+          "package_name": "AgriFair.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBumvOkql5kdV7pTc_EcVIjfF7VvQHRZBY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

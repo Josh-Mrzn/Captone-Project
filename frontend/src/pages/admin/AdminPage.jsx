@@ -1,56 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Menu, CalendarDays } from 'lucide-react';
 import './AdminPage.css';
 
-// ── Components ─────────────────────────────────────────
 import AdminSidebar from './components/AdminSidebar';
-
-// ── Tabs ───────────────────────────────────────────────
-import DashboardTab   from './tabs/DashboardTab';
+import NotificationBell from './components/NotificationBell';
+import DashboardTab from './tabs/DashboardTab';
 import ProductListTab from './tabs/ProductListTab';
-import ReportsTab     from './tabs/ReportsTab';
-import MessagesTab    from './tabs/MessagesTab';
-import SettingsTab    from './tabs/SettingsTab';
+import InventoryTab from './tabs/InventoryTab';
+import OrdersTab from './tabs/OrdersTab';
+import ReportsTab from './tabs/ReportsTab';
+import MessagesTab from './tabs/MessagesTab';
+import AccountInfoTab from './tabs/AccountInfoTab';
+import { clearSession, getSessionUser } from '../../utils/auth';
 
-// ── Tab configuration (Events & User Management removed — Super Admin only) ──
-const TABS = ['Dashboard', 'Product List', 'Reports', 'Messages', 'Settings'];
+const TABS = ['Dashboard', 'Products', 'Inventory', 'Orders', 'Analytics', 'Messages', 'Account Info'];
 
 export default function AdminPage({ onLogout }) {
   const navigate = useNavigate();
-  const [user, setUser]               = useState({ email: '', role: 'Admin' });
-  const [activeTab, setActiveTab]     = useState('Dashboard');
+  // Read the session during initialisation - syncing it in an effect caused a
+  // cascading render and a frame of empty user data on every mount.
+  const [user] = useState(() => getSessionUser() || { email: '', role: 'seller', name: '' });
+  const [activeTab, setActiveTab] = useState('Dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showLogout, setShowLogout]   = useState(false);
-
-  useEffect(() => {
-    const s = sessionStorage.getItem('userSession');
-    if (s) setUser(JSON.parse(s));
-  }, []);
+  const [showLogout, setShowLogout] = useState(false);
 
   const handleLogout = () => {
-    sessionStorage.removeItem('isLoggedIn');
-    sessionStorage.removeItem('userSession');
+    clearSession();
     if (onLogout) onLogout();
     navigate('/login');
   };
 
-  // ── Tab renderer ──────────────────────────────────────
+  const displayName = user.name || user.email?.split('@')[0] || 'Seller';
+  const now = new Date();
+  const todayWeekday = now.toLocaleDateString('en-PH', { weekday: 'long' });
+  const todayDate = now.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' });
+
   const renderTab = () => {
     switch (activeTab) {
-      case 'Dashboard':    return <DashboardTab user={user} />;
-      case 'Product List': return <ProductListTab />;
-      case 'Reports':      return <ReportsTab />;
-      case 'Messages':     return <MessagesTab />;
-      case 'Settings':     return <SettingsTab />;
-      default:             return null;
+      case 'Dashboard':
+        return <DashboardTab onNavigate={setActiveTab} />;
+      case 'Products':
+        return <ProductListTab />;
+      case 'Inventory':
+        return <InventoryTab />;
+      case 'Orders':
+        return <OrdersTab />;
+      case 'Analytics':
+        return <ReportsTab />;
+      case 'Messages':
+        return <MessagesTab user={user} />;
+      case 'Account Info':
+        return <AccountInfoTab />;
+      default:
+        return null;
     }
   };
 
   return (
     <div className="ap-root">
-      {/* SIDEBAR (component) */}
       <AdminSidebar
         user={user}
+        tabs={TABS}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         sidebarOpen={sidebarOpen}
@@ -58,25 +69,46 @@ export default function AdminPage({ onLogout }) {
         onLogoutClick={() => setShowLogout(true)}
       />
 
-      {/* MAIN */}
       <main className="ap-main">
         <header className="ap-topbar">
-          <button className="ap-menu-btn" onClick={() => setSidebarOpen(true)}>☰</button>
-          <div className="ap-topbar-title">{activeTab}</div>
+          <div className="ap-topbar-left">
+            <button
+              className="ap-menu-btn"
+              type="button"
+              aria-label="Open menu"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={18} strokeWidth={2.25} />
+            </button>
+            <div>
+              <p className="ap-eyebrow">Seller workspace</p>
+              <p className="ap-greeting">Hello, {displayName}</p>
+              <h1 className="ap-topbar-title">{activeTab}</h1>
+            </div>
+          </div>
+
+          <div className="ap-topbar-right">
+            <div className="ap-topbar-meta">
+              <CalendarDays size={17} strokeWidth={2.2} />
+              <div>
+                <span className="ap-topbar-meta-day">{todayWeekday}</span>
+                <span className="ap-topbar-meta-date">{todayDate}</span>
+              </div>
+            </div>
+            <NotificationBell onNavigate={setActiveTab} />
+          </div>
         </header>
         <div className="ap-body">{renderTab()}</div>
       </main>
 
-      {/* LOGOUT MODAL */}
       {showLogout && (
         <div className="ap-modal-overlay">
           <div className="ap-modal">
-            <div className="ap-modal-icon">🚪</div>
             <h3>Log out?</h3>
-            <p>Are you sure you want to sign out of AgriFair Admin?</p>
+            <p>Are you sure you want to sign out of your AgriFair seller portal?</p>
             <div className="ap-modal-actions">
-              <button className="ap-modal-cancel" onClick={() => setShowLogout(false)}>Cancel</button>
-              <button className="ap-modal-confirm" onClick={handleLogout}>Yes, Log Out</button>
+              <button className="ap-modal-cancel" type="button" onClick={() => setShowLogout(false)}>Cancel</button>
+              <button className="ap-modal-confirm" type="button" onClick={handleLogout}>Yes, Log Out</button>
             </div>
           </div>
         </div>

@@ -7,7 +7,18 @@ let io;
 export const initSockets = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: 'http://localhost:5173',
+      // Mirrors the HTTP CORS policy - see corsOrigin in index.js
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const loopback = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
+        const allowed = (process.env.CORS_ORIGINS || '')
+          .split(',')
+          .map((o) => o.trim())
+          .filter(Boolean);
+        if (allowed.includes(origin)) return callback(null, true);
+        if (process.env.NODE_ENV !== 'production' && loopback) return callback(null, true);
+        return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+      },
       methods: ['GET', 'POST'],
       credentials: true
     }
@@ -15,10 +26,10 @@ export const initSockets = (httpServer) => {
 
   io.on('connection', (socket) => {
     // Check if the connection is an admin (you can pass this via query params or auth)
-    const isAdmin = socket.handshake.query.role === 'admin';
+    const isAdmin = socket.handshake.query.role === 'seller' || socket.handshake.query.role === 'superadmin';
     
     if (isAdmin) {
-      console.log('📡 Admin connected:', socket.id);
+      console.log('📡 Staff connected:', socket.id);
       socket.join('admin_room');
     } else {
       console.log('👤 User connected:', socket.id);

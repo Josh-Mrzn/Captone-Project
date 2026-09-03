@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Pages
 import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/landing/LoginPage.jsx';
 import RegisterPage from './pages/landing/RegisterPage.jsx';
@@ -9,14 +7,14 @@ import ForgotPasswordPage from './pages/landing/ForgotPasswordPage.jsx';
 
 import AdminPage from './pages/admin/AdminPage.jsx';
 import SuperAdminPage from './pages/superadmin/SuperAdminPage.jsx';
+import { getHomePath, getSessionUser, clearSession } from './utils/auth.js';
 
 const getAuth = () => {
   const token = sessionStorage.getItem('token');
-  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+  const user = getSessionUser();
   return { token, user };
 };
 
-// 🔐 Protected Route
 function ProtectedRoute({ children, role }) {
   const { token, user } = getAuth();
 
@@ -25,34 +23,42 @@ function ProtectedRoute({ children, role }) {
   }
 
   if (role && user.role !== role) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={getHomePath(user.role)} replace />;
   }
 
   return children;
 }
 
-// 🔓 Public only route
 function PublicOnlyRoute({ children }) {
-  const { token } = getAuth();
+  const { token, user } = getAuth();
 
-  return token ? <Navigate to="/admin" replace /> : children;
+  if (token && user) {
+    return <Navigate to={getHomePath(user.role)} replace />;
+  }
+
+  return children;
+}
+
+function HomeRedirect() {
+  const { token, user } = getAuth();
+  if (token && user) {
+    const path = getHomePath(user.role);
+    if (path === '/') return <LandingPage />;
+    return <Navigate to={path} replace />;
+  }
+  return <LandingPage />;
 }
 
 export default function App() {
-
   const handleLogout = () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    clearSession();
   };
 
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<HomeRedirect />} />
 
-        {/* LANDING */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* AUTH */}
         <Route path="/login" element={
           <PublicOnlyRoute>
             <LoginPage />
@@ -71,23 +77,21 @@ export default function App() {
           </PublicOnlyRoute>
         } />
 
-        {/* ADMIN */}
-        <Route path="/admin" element={
-          <ProtectedRoute role="admin">
+        <Route path="/admin" element={<Navigate to="/client" replace />} />
+
+        <Route path="/client" element={
+          <ProtectedRoute role="seller">
             <AdminPage onLogout={handleLogout} />
           </ProtectedRoute>
         } />
 
-        {/* SUPERADMIN */}
         <Route path="/superadmin" element={
           <ProtectedRoute role="superadmin">
             <SuperAdminPage onLogout={handleLogout} />
           </ProtectedRoute>
         } />
 
-        {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
-
       </Routes>
     </BrowserRouter>
   );

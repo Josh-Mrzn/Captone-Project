@@ -1,12 +1,11 @@
-// backend/src/routes/authRoutes.js
-import express from "express";
-import { register, login, logout } from "../controllers/authController.js";
+import express from 'express';
+import { register, login, logout, resendVerification } from '../controllers/authController.js';
 
 const router = express.Router();
 
-// Auth Routes
-router.post("/register", register);   // POST /api/auth/register
-router.post("/login", login);         // POST /api/auth/login
-router.post("/logout", logout);       // POST /api/auth/logout
+router.post('/register', register);
+router.post('/login', login);
+router.post('/logout', logout);
+router.post('/resend-verification', resendVerification);
 
 export default router;

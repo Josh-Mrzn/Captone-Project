@@ -92,3 +92,67 @@ export const activateUser = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const getAuditLogs = async (req, res) => {
+  try {
+    const { page, limit, action, adminId, from, to } = req.query;
+    const result = await SuperAdminService.getAuditLogs({
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      action,
+      adminId,
+      from,
+      to,
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getUserAnalytics = async (req, res) => {
+  try {
+    const analytics = await SuperAdminService.getUserAnalytics(req.params.id);
+    res.json(analytics);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getPlatformRevenue = async (req, res) => {
+  try {
+    const revenue = await SuperAdminService.getPlatformRevenue();
+    res.json(revenue);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+export const getBusinessAnalytics = async (req, res) => {
+  try {
+    const data = await SuperAdminService.getBusinessAnalytics();
+    res.json(data);
+  } catch (error) {
+    console.error('[superadmin] business analytics failed:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const reviewSellerCredentialHandler = async (req, res) => {
+  try {
+    const user = await SuperAdminService.reviewSellerCredential(
+      req.params.id, req.user.userId, req.body || {}
+    );
+    res.json({ userId: user.userId, payout: user.payout, documents: user.documents });
+  } catch (error) {
+    console.error('[superadmin] credential review failed:', error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const getPendingCredentialsHandler = async (req, res) => {
+  try {
+    res.json(await SuperAdminService.getPendingCredentials());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

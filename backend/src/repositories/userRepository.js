@@ -4,6 +4,10 @@ export const findUserByUserId = async (userId) => {
   return User.findOne({ userId }).select('+password');
 };
 
+export const findUserByUserIdSafe = async (userId) => {
+  return User.findOne({ userId });
+};
+
 export const updateUserByUserId = async (userId, data) => {
   return User.findOneAndUpdate(
     { userId },

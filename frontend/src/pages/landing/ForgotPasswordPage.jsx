@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './AuthPages.css';
+import logoImg from '../../assets/logo.png';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -10,13 +11,21 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) { setError('Email is required'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Invalid email format'); return; }
+
+    if (!email) {
+      setError('Email is required');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Invalid email format');
+      return;
+    }
+
     setLoading(true);
     setError('');
+
     try {
-      // MOCK — replace with: await axios.post('/api/auth/forgot-password', { email });
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       setSent(true);
     } catch {
       setError('Something went wrong. Please try again.');
@@ -26,56 +35,82 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-left">
-        <Link to="/" className="auth-brand"><span>🌿</span> AgriFair</Link>
-        <div className="auth-left-body">
-          <h2>"We'll get you back in no time."</h2>
-          <p>Password recovery for admin users.</p>
-        </div>
-        <p className="auth-left-foot">© 2025 AgriFair Capstone</p>
-      </div>
+    <div className="auth-page-v2">
+      <div className="auth-form-side">
+        <Link to="/" className="auth-v2-brand" aria-label="Go to AgriFair home">
+          <img src={logoImg} alt="AgriFair Logo" className="auth-v2-brand-img" />
+          <span className="auth-v2-brand-text">AgriFair</span>
+        </Link>
 
-      <div className="auth-right">
-        <div className="auth-card">
+        <div className="auth-form-body">
+          <div className="auth-v2-label">Password Recovery</div>
+
           {!sent ? (
             <>
-              <div className="auth-card-header">
-                <div className="auth-icon-large">🔑</div>
-                <h1>Forgot Password?</h1>
-                <p>Enter your email and we'll send you a reset link.</p>
-              </div>
-              <form className="auth-form" onSubmit={handleSubmit} noValidate>
-                <div className={`auth-field ${error ? 'has-error' : ''}`}>
-                  <label htmlFor="email">Email Address</label>
-                  <div className="auth-input-wrap">
-                    <span className="auth-input-icon">✉</span>
-                    <input type="email" id="email" name="email" value={email}
-                      onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                      placeholder="you@example.com" disabled={loading} autoComplete="email" />
+              <h1 className="auth-v2-title">Forgot password?</h1>
+              <p className="auth-v2-subtitle">
+                Enter your email and we will send you a reset link to get back in.
+              </p>
+
+              <form className="auth-v2-form" onSubmit={handleSubmit} noValidate>
+                <div className={`auth-v2-field ${error ? 'has-error' : ''}`}>
+                  <label htmlFor="email">Email address</label>
+                  <div className="auth-v2-input-wrap">
+                    <span className="auth-v2-input-icon">ID</span>
+                    <input
+                      id="email"
+                      type="email"
+                      name="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError('');
+                      }}
+                      placeholder="admin@agrifair.com"
+                      autoComplete="email"
+                      disabled={loading}
+                    />
                   </div>
-                  {error && <span className="auth-error-msg">{error}</span>}
+                  {error && <span className="auth-v2-error">{error}</span>}
                 </div>
-                <button type="submit" className="auth-submit-btn" disabled={loading}>
-                  {loading ? <span className="auth-spinner" /> : null}
-                  {loading ? 'Sending…' : 'Send Reset Link'}
+
+                <button type="submit" className="auth-v2-submit" disabled={loading}>
+                  {loading ? 'Sending...' : 'Send Reset Link'}
+                  {!loading && <span className="auth-v2-submit-arrow">-&gt;</span>}
                 </button>
               </form>
-              <p className="auth-toggle">
+
+              <p className="auth-v2-footer-note">
                 Remember your password?{' '}
-                <Link to="/login" className="auth-toggle-link">Back to Log In</Link>
+                <Link to="/login" className="auth-v2-inline-link">Back to sign in</Link>
               </p>
             </>
           ) : (
-            <div className="auth-success-state">
-              <div className="auth-success-icon">📬</div>
-              <h2>Check Your Email</h2>
-              <p>We sent a reset link to <strong>{email}</strong>. It may take a few minutes.</p>
-              <Link to="/login" className="auth-submit-btn" style={{ display:'flex', justifyContent:'center', textDecoration:'none', marginTop:'1rem' }}>
-                Back to Log In
+            <>
+              <h1 className="auth-v2-title">Check your email.</h1>
+              <p className="auth-v2-subtitle">
+                We sent a password reset link to <strong>{email}</strong>. It may take a few minutes.
+              </p>
+              <Link to="/login" className="auth-v2-submit">
+                Back to Sign In <span className="auth-v2-submit-arrow">-&gt;</span>
               </Link>
-            </div>
+            </>
           )}
+        </div>
+      </div>
+
+      <div className="auth-brand-side">
+        <div className="auth-brand-side-bg" />
+        <div className="auth-brand-side-content">
+          <div className="auth-brand-badge">Account Recovery</div>
+          <h2 className="auth-brand-headline">
+            Back in
+            <br />
+            control soon.
+          </h2>
+          <p className="auth-brand-desc">
+            Reset your admin access securely and return to managing AgriFair operations.
+          </p>
         </div>
       </div>
     </div>

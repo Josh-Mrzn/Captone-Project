@@ -1,43 +1,38 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import './AuthPages.css';
-import { loginUser } from '../../services/authApi';
+import logoImg from '../../assets/logo.png';
+import { loginUser, getErrorMessage } from '../../services/authApi';
+import { getHomePath } from '../../utils/auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
-
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({ type: '', message: '' });
 
-  // 🔥 CUSTOM ALERT STATE
-  const [alert, setAlert] = useState({
-    type: '',
-    message: ''
-  });
+  useEffect(() => {
+    if (searchParams.get('verified') === '1') {
+      setAlert({
+        type: 'success',
+        message: 'Email verified successfully. You can sign in now.'
+      });
+    }
+  }, [searchParams]);
 
-  // ================= HANDLE INPUT =================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
-  // ================= VALIDATION =================
   const validate = () => {
     const errs = {};
 
@@ -47,23 +42,17 @@ export default function LoginPage() {
     }
 
     if (!formData.password) errs.password = 'Password is required';
-    else if (formData.password.length < 6) {
-      errs.password = 'Minimum 6 characters';
-    }
+    else if (formData.password.length < 6) errs.password = 'Minimum 6 characters';
 
     return errs;
   };
 
-  // ================= CUSTOM ALERT =================
   const showAlert = (type, message) => {
     setAlert({ type, message });
-
-    setTimeout(() => {
-      setAlert({ type: '', message: '' });
-    }, 3000);
+    // Errors now carry actionable detail - give them time to be read.
+    setTimeout(() => setAlert({ type: '', message: '' }), type === 'error' ? 9000 : 4000);
   };
 
-  // ================= SUBMIT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -77,120 +66,137 @@ export default function LoginPage() {
     setErrors({});
 
     try {
-      const res = await loginUser(formData);
+      const res = await loginUser({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      });
 
       sessionStorage.setItem('token', res.data.token);
       sessionStorage.setItem('user', JSON.stringify(res.data.user));
 
-      // 🔥 SUCCESS ALERT
-      showAlert('success', 'Login successful! Redirecting...');
-
-      setTimeout(() => {
-        navigate('/admin');
-      }, 1000);
-
+      const home = getHomePath(res.data.user?.role);
+      showAlert('success', 'Login successful. Redirecting...');
+      setTimeout(() => navigate(home === '/' ? '/' : home), 1000);
     } catch (err) {
-      // ❌ ERROR ALERT
-      showAlert(
-        'error',
-        err.response?.data?.message || 'Login failed'
-      );
+      showAlert('error', getErrorMessage(err, 'Login failed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
-
-      {/* LEFT */}
-      <div className="auth-left">
-        <Link to="/" className="auth-brand">
-          <span>🌿</span> AgriFair
+    <div className="auth-page-v2 auth-page-login">
+      <div className="auth-form-side">
+        <Link to="/" className="auth-v2-brand" aria-label="Go to AgriFair home">
+          <img src={logoImg} alt="AgriFair Logo" className="auth-v2-brand-img" />
+          <span className="auth-v2-brand-text">AgriFair</span>
         </Link>
 
-        <div className="auth-left-body">
-          <h2>"Connecting farmers, traders, and administrators — one fair at a time."</h2>
-          <p>Admin Portal · Secure Access · Role-Based Control</p>
-        </div>
+        <div className="auth-form-body">
+          <div className="auth-v2-label">Portal Access</div>
+          <h1 className="auth-v2-title">Welcome back.</h1>
+          <p className="auth-v2-subtitle">
+            Enter your account details to continue to the AgriFair management system.
+          </p>
 
-        <p className="auth-left-foot">© 2025 AgriFair Capstone</p>
-      </div>
-
-      {/* RIGHT */}
-      <div className="auth-right">
-        <div className="auth-card">
-
-          <div className="auth-card-header">
-            <h1>Welcome back</h1>
-            <p>Log in to your admin account</p>
-          </div>
-
-          {/* 🔥 CUSTOM ALERT */}
           {alert.message && (
-            <div className={`custom-alert ${alert.type}`}>
+            <div className={`custom-alert-v2 ${alert.type}`}>
               {alert.message}
             </div>
           )}
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
-
-            {/* EMAIL */}
-            <div className={`auth-field ${errors.email ? 'has-error' : ''}`}>
-              <label>Email Address</label>
-              <div className="auth-input-wrap">
-                <span className="auth-input-icon">✉</span>
+          <form className="auth-v2-form" onSubmit={handleSubmit} noValidate>
+            <div className={`auth-v2-field ${errors.email ? 'has-error' : ''}`}>
+              <label htmlFor="email">Email address</label>
+              <div className="auth-v2-input-wrap">
+                <span className="auth-v2-input-icon">ID</span>
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="you@example.com"
+                  placeholder="admin@agrifair.com"
+                  autoComplete="email"
                   disabled={loading}
                 />
               </div>
-              {errors.email && (
-                <span className="auth-error-msg">{errors.email}</span>
-              )}
+              {errors.email && <span className="auth-v2-error">{errors.email}</span>}
             </div>
 
-            {/* PASSWORD */}
-            <div className={`auth-field ${errors.password ? 'has-error' : ''}`}>
-              <label>Password</label>
-              <div className="auth-input-wrap">
-                <span className="auth-input-icon">🔒</span>
+            <div className={`auth-v2-field ${errors.password ? 'has-error' : ''}`}>
+              <label htmlFor="password">Password</label>
+              <div className="auth-v2-input-wrap">
+                <span className="auth-v2-input-icon">PW</span>
                 <input
+                  id="password"
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
                   disabled={loading}
                 />
               </div>
-              {errors.password && (
-                <span className="auth-error-msg">{errors.password}</span>
-              )}
-
-              <Link to="/forgot-password" className="auth-forgot-link">
-                Forgot password?
-              </Link>
+              {errors.password && <span className="auth-v2-error">{errors.password}</span>}
             </div>
 
-            {/* SUBMIT */}
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? 'Logging in…' : 'Log In'}
-            </button>
+            <div className="auth-v2-options">
+              <label className="auth-v2-checkbox">
+                <input type="checkbox" />
+                <span>Keep me signed in</span>
+              </label>
+              <Link to="/forgot-password" className="auth-v2-forgot">Forgot password?</Link>
+            </div>
 
+            <button type="submit" className="auth-v2-submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+              {!loading && <span className="auth-v2-submit-arrow">-&gt;</span>}
+            </button>
           </form>
 
-          <p className="auth-toggle">
-            Don't have an account?{' '}
-            <Link to="/register" className="auth-toggle-link">
-              Register here
-            </Link>
+          <p className="auth-v2-footer-note">
+            Need an admin account?{' '}
+            <Link to="/register" className="auth-v2-inline-link">Create account</Link>
+          </p>
+        </div>
+      </div>
+
+      <div className="auth-brand-side">
+        <div className="auth-brand-side-bg" />
+        <div className="auth-brand-side-content">
+          <div className="auth-brand-badge">Secure Admin Portal</div>
+          <h2 className="auth-brand-headline">
+            One platform.
+            <br />
+            Smarter fairs.
+          </h2>
+          <p className="auth-brand-desc">
+            Coordinating events, sellers, analytics, and mobile activity across the AgriFair system.
           </p>
 
+          <div className="auth-brand-stats-card">
+            <div className="auth-brand-stats-card-header">
+              <span className="auth-brand-stats-tag">AgriFair at a Glance</span>
+              <span className="auth-brand-stats-desc">Fair operations, simplified.</span>
+            </div>
+            <div className="auth-brand-stats-row">
+              <div className="auth-brand-stat">
+                <span className="auth-brand-stat-value">500+</span>
+                <span className="auth-brand-stat-label">Users</span>
+              </div>
+              <div className="auth-brand-stat">
+                <span className="auth-brand-stat-value">120+</span>
+                <span className="auth-brand-stat-label">Events</span>
+              </div>
+              <div className="auth-brand-stat">
+                <span className="auth-brand-stat-value">24/7</span>
+                <span className="auth-brand-stat-label">Admin Sync</span>
+              </div>
+            </div>
+            <p className="auth-brand-stats-foot">Serving agricultural communities with one unified portal.</p>
+          </div>
         </div>
       </div>
     </div>

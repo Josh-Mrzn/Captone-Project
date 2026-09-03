@@ -10,9 +10,8 @@ import { protect, authorizeRoles } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Only admin and user can access chat
 router.use(protect);
-router.use(authorizeRoles('admin', 'user'));
+router.use(authorizeRoles('superadmin', 'seller', 'buyer'));
 
 // GET /api/chat/conversations
 router.get('/conversations', getUserConversationsList);

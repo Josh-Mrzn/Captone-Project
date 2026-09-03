@@ -17,7 +17,20 @@ const adminAuditLogSchema = new mongoose.Schema({
   },
   details: {
     type: String,
-  }
+  },
+  // Snapshotted at write time so the log stays readable after the user is deleted.
+  targetEmail: {
+    type: String,
+    default: '',
+  },
+  targetName: {
+    type: String,
+    default: '',
+  },
+  targetRole: {
+    type: String,
+    default: '',
+  },
 }, { timestamps: true });
 
 const AdminAuditLog = mongoose.model('AdminAuditLog', adminAuditLogSchema);

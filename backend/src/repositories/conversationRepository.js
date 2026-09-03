@@ -20,6 +20,10 @@ const updateLastMessage = async (conversationId, messageId) => {
   );
 };
 
+const findConversationById = async (conversationId) => {
+  return await Conversation.findById(conversationId);
+};
+
 const getUserConversations = async (mongoUserId) => {
   // Use the MongoDB _id here, as the Conversation schema stores ObjectIds
   return await Conversation.find({ participants: mongoUserId })
@@ -28,4 +32,4 @@ const getUserConversations = async (mongoUserId) => {
     .sort({ updatedAt: -1 });
 };
 
-export { findConversation, createConversation, updateLastMessage, getUserConversations };
+export { findConversation, createConversation, updateLastMessage, getUserConversations, findConversationById };

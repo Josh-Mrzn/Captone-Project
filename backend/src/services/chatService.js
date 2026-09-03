@@ -1,8 +1,9 @@
-import { findConversation, createConversation, updateLastMessage, getUserConversations } from '../repositories/conversationRepository.js';
+import { findConversation, createConversation, updateLastMessage, getUserConversations, findConversationById } from '../repositories/conversationRepository.js';
 import { createMessage, getMessagesByConversationId } from '../repositories/messageRepository.js';
 import User from '../models/User.js';
+import * as notificationRepo from '../repositories/notificationRepository.js';
 
-const allowedRoles = ['admin', 'user', 'superadmin'];
+const allowedRoles = ['superadmin', 'seller', 'buyer'];
 
 // 1. Fixed: Cast to Number to match numeric userId in User Schema
 const validateParticipantsByUserId = async (senderUserId, receiverUserId) => {
@@ -39,14 +40,33 @@ export const sendMessageByUserId = async (senderUserId, receiverUserId, text, me
   // Save using MongoDB _ids
   const message = await createMessage(conversation._id, sender._id, receiver._id, text, mediaUrl);
   await updateLastMessage(conversation._id, message._id);
-  
+
+  await notificationRepo.createNotification({
+    userId: receiver.userId,
+    type: 'MESSAGE',
+    title: `New message from ${sender.name}`,
+    body: text ? text.slice(0, 120) : 'Sent an image',
+    link: `/client?tab=Messages&conversation=${conversation._id}`,
+  });
+
   return await message.populate([
     { path: 'sender', select: 'name email role userId' },
     { path: 'receiver', select: 'name email role userId' }
   ]);
 };
 
-export const fetchMessagesByConversationId = async (conversationId) => {
+export const fetchMessagesByConversationId = async (conversationId, requesterUserId) => {
+  const conversation = await findConversationById(conversationId);
+  if (!conversation) {
+    throw new Error('Conversation not found.');
+  }
+
+  const requester = await User.findOne({ userId: requesterUserId });
+  const isParticipant = requester && conversation.participants.some((p) => p.equals(requester._id));
+  if (!isParticipant) {
+    throw new Error('Not authorized to view this conversation.');
+  }
+
   return await getMessagesByConversationId(conversationId);
 };
 

@@ -1,29 +1,63 @@
-// src/controllers/authController.js
 import { authService } from '../services/authService.js';
 import { getIo } from '../sockets/socket.js';
 
-export const register = async (req, res, next) => {
+/** Never let the client fall back to a bare "Login failed" - always send real text. */
+function fail(res, status, err, fallback) {
+  console.error(`[auth] ${fallback}:`, err);
+  return res.status(status).json({
+    success: false,
+    message: err?.message || fallback
+  });
+}
+
+export const register = async (req, res) => {
   try {
     const user = await authService.register(req.body);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: user.verificationEmailSent
+        ? 'Account created. Please check your Gmail to verify your email.'
+        : 'Account created, but the verification email could not be sent. Use Resend.',
       user
     });
-  }catch (err) {
-    return res.status(401).json({
-      message: err.message || 'Registration failed'
+  } catch (err) {
+    const isDuplicate = /already exists/i.test(err?.message || '');
+    return fail(res, isDuplicate ? 409 : 400, err, 'Registration failed');
+  }
+};
+
+export const resendVerification = async (req, res) => {
+  try {
+    const result = await authService.resendVerification(req.body);
+    return res.status(200).json({
+      success: true,
+      message: 'If that account exists, a verification email was sent.',
+      ...result
     });
+  } catch (err) {
+    return fail(res, 400, err, 'Could not resend verification email');
   }
 };
 
 export const login = async (req, res) => {
-  try {
-    const result = await authService.login(req.body);
+  let result;
 
-    // === WebSocket Real-time Feed ===
-    const io = getIO();
+  try {
+    result = await authService.login(req.body, {
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+      client: req.headers['x-client'],
+    });
+  } catch (err) {
+    return fail(res, 401, err, 'Login failed');
+  }
+
+  res.cookie('accessToken', result.token, authService.getAuthCookieOptions());
+
+  // Broadcasting is best-effort - a socket problem must not reject a valid login.
+  try {
+    const io = getIo();
     if (io) {
       io.emit('new-login', {
         userId: result.user.id,
@@ -33,30 +67,24 @@ export const login = async (req, res) => {
         timestamp: new Date().toISOString()
       });
     }
-
-    return res.status(200).json({
-      message: 'Login successful',
-      ...result
-    });
-
   } catch (err) {
-    return res.status(401).json({
-      message: err.message || 'Login failed'
-    });
+    console.warn('[auth] could not broadcast new-login:', err.message);
   }
+
+  return res.status(200).json({
+    success: true,
+    message: 'Login successful',
+    token: result.token,
+    firebaseIdToken: result.firebaseIdToken || null,
+    user: result.user
+  });
 };
 
 export const logout = (req, res) => {
-  res.cookie('accessToken', '', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 0,
-    path: '/'
-  });
+  res.cookie('accessToken', '', authService.getLogoutCookieOptions());
 
-  res.json({ 
-    success: true, 
-    message: 'Logged out successfully' 
+  res.json({
+    success: true,
+    message: 'Logged out successfully'
   });
 };
