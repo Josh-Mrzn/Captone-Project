@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import '../models/user_model.dart';
+import '../services/api_client.dart';
+import '../services/auth_service.dart';
 import 'sign_up_screen.dart';
 import 'main_screen.dart';
 import 'forgot_password_screen.dart';
@@ -38,16 +40,39 @@ class _SignInScreenState extends State<SignInScreen> {
 
     setState(() => _isLoading = true);
 
-    // Simulate network call
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final user = await AuthService.instance.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+      if (!mounted) return;
+      UserModel.of(context).applyAccount(user);
 
-    UserModel.of(context).initialize(email: _emailController.text.trim());
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
+    } on ApiException catch (err) {
+      // The backend writes these for a person to read - "Please verify your
+      // email", "Your account has been suspended" - so show its words, not a
+      // generic failure.
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showError(err.message);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.primaryDark,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
   }
 
   @override

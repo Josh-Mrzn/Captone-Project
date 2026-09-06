@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import '../services/api_client.dart';
+import '../services/auth_service.dart';
 import 'otp_verification_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -62,19 +64,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    try {
+      final result = await AuthService.instance.signUp(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => OtpVerificationScreen(
-          email: _emailController.text.trim(),
-          fullName: _nameController.text.trim(),
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      // The account exists either way. If the email did not go out, the OTP
+      // screen can still resend, so send them there rather than dead-ending.
+      if (!result.emailSent) {
+        _showMessage(result.message);
+      }
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(
+            email: _emailController.text.trim(),
+            fullName: _nameController.text.trim(),
+          ),
         ),
-      ),
-    );
+      );
+    } on ApiException catch (err) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showMessage(err.message);
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: AppColors.primaryDark,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
   }
 
   @override

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../services/auth_service.dart';
+
 class OrderItem {
   final String productName;
   final String weight;
@@ -47,6 +49,14 @@ class OrderRecord {
 }
 
 class UserModel extends ChangeNotifier {
+  /// The signed-in account as the backend sees it. Null means signed out, and
+  /// every screen that needs a session should read it rather than assume one.
+  AuthUser? _account;
+
+  AuthUser? get account => _account;
+  bool get isSignedIn => _account != null;
+  bool get isEmailVerified => _account?.emailVerified ?? false;
+
   String email = '';
   String fullName = '';
   String contactNumber = '';
@@ -77,6 +87,17 @@ class UserModel extends ChangeNotifier {
   void initialize({required String email, String fullName = ''}) {
     this.email = email;
     this.fullName = fullName;
+    notifyListeners();
+  }
+
+  /// Fills the profile from a real account. The screens already read
+  /// `fullName` and `contactNumber`, so those are kept in step with it.
+  void applyAccount(AuthUser user) {
+    _account = user;
+    email = user.email;
+    fullName = user.name;
+    if (user.contact.isNotEmpty) contactNumber = user.contact;
+    if (user.avatarUrl.isNotEmpty) profileImagePath = user.avatarUrl;
     notifyListeners();
   }
 
@@ -139,6 +160,7 @@ class UserModel extends ChangeNotifier {
   }
 
   void reset() {
+    _account = null;
     email = '';
     fullName = '';
     contactNumber = '';

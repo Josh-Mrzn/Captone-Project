@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import '../services/api_client.dart';
+import '../services/auth_service.dart';
 import '../widgets/agrifair_logo.dart';
 import '../widgets/primary_button.dart';
 import 'sign_in_screen.dart';
@@ -101,37 +103,67 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       _hasError = false;
     });
 
-    await Future.delayed(const Duration(milliseconds: 1200));
-    if (!mounted) return;
+    try {
+      final message = await AuthService.instance.verifyEmailOtp(
+        email: widget.email,
+        code: _code,
+      );
 
-    setState(() => _isVerifying = false);
+      if (!mounted) return;
+      setState(() => _isVerifying = false);
+      _notify(message);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Email verified! Please log in to continue.'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const SignInScreen()),
-      (route) => false,
-    );
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const SignInScreen()),
+        (route) => false,
+      );
+    } on ApiException catch (err) {
+      // The server counts the tries and says how many are left, so its message
+      // is more useful here than a plain "wrong code".
+      if (!mounted) return;
+      setState(() {
+        _isVerifying = false;
+        _hasError = true;
+      });
+      _clearDigits();
+      _notify(err.message);
+    }
   }
 
-  void _handleResend() {
+  Future<void> _handleResend() async {
     if (_secondsLeft > 0) return;
+
+    _clearDigits();
+    setState(() => _hasError = false);
+    _startResendTimer();
+
+    try {
+      final message = await AuthService.instance.resendVerification(widget.email);
+      if (!mounted) return;
+      _notify(message);
+    } on ApiException catch (err) {
+      if (!mounted) return;
+      _notify(err.message);
+    }
+  }
+
+  void _clearDigits() {
     for (final c in _controllers) {
       c.clear();
     }
     _focusNodes.first.requestFocus();
-    setState(() => _hasError = false);
-    _startResendTimer();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('A new code has been sent to your email'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  }
+
+  void _notify(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
   }
 
   String _maskedEmail() {

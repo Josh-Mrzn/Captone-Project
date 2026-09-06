@@ -117,9 +117,9 @@ nakikita ang laman ng database.
 Ang backend ang nag-iisyu ng sarili nitong JWT; ang Firebase ay para lang sa password.
 **Ang backend JWT ang itatago** — hindi ang `firebaseIdToken`.
 
-- [ ] Ikabit ang Sign In at Sign Up sa `/api/auth/login` at `/api/auth/register`
-- [ ] Itago ang token sa `flutter_secure_storage`, hindi sa SharedPreferences
-- [ ] Auth state na kayang basahin ng buong app, at auto-logout kapag 401
+- [x] Ikabit ang Sign In at Sign Up sa `/api/auth/login` at `/api/auth/register`
+- [x] Itago ang token sa `flutter_secure_storage`, hindi sa SharedPreferences
+- [x] Auth state na kayang basahin ng buong app, at auto-logout kapag 401
 
 **Tapos kapag:** nakapag-login ka sa mobile gamit ang account na ginawa mo sa web.
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -58,8 +59,17 @@ class ApiClient {
   }
 
   Future<void> saveToken(String token) async {
+    // The session is live from here whatever the keystore does.
     _cachedToken = token;
-    await _storage.write(key: _tokenKey, value: token);
+
+    try {
+      await _storage.write(key: _tokenKey, value: token);
+    } catch (err) {
+      // A locked or unavailable keystore must not undo a successful sign-in.
+      // The person stays signed in for this run; only "stay signed in after a
+      // restart" is lost, which is far better than failing the login itself.
+      debugPrint('[api] could not persist the session token: $err');
+    }
   }
 
   Future<void> clearToken() async {
