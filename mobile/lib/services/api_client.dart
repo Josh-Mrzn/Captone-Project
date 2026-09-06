@@ -14,12 +14,18 @@ import 'api_config.dart';
 /// to confirm this order."), so they are passed through rather than replaced
 /// with a generic failure string.
 class ApiException implements Exception {
-  ApiException(this.message, {this.statusCode});
+  ApiException(this.message, {this.statusCode, this.code});
 
   final String message;
   final int? statusCode;
 
+  /// Set only when the server marks a failure as one the app should act on,
+  /// such as `EMAIL_NOT_VERIFIED`. Reading this beats matching the sentence,
+  /// which changes whenever the wording is improved.
+  final String? code;
+
   bool get isUnauthorized => statusCode == 401;
+  bool get isEmailNotVerified => code == 'EMAIL_NOT_VERIFIED';
 
   @override
   String toString() => message;
@@ -181,6 +187,7 @@ class ApiClient {
       throw ApiException(
         message?.toString() ?? 'Request failed ($status).',
         statusCode: status,
+        code: body is Map ? body['code']?.toString() : null,
       );
     }
 

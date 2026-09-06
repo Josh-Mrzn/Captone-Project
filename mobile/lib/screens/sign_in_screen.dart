@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import 'sign_up_screen.dart';
 import 'main_screen.dart';
 import 'forgot_password_screen.dart';
+import 'otp_verification_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -53,13 +54,40 @@ class _SignInScreenState extends State<SignInScreen> {
         context,
       ).pushReplacement(MaterialPageRoute(builder: (_) => const MainScreen()));
     } on ApiException catch (err) {
-      // The backend writes these for a person to read - "Please verify your
-      // email", "Your account has been suspended" - so show its words, not a
-      // generic failure.
       if (!mounted) return;
       setState(() => _isLoading = false);
+
+      // An unverified account is not a dead end - it is a step the person has
+      // not finished. Send them to the boxes with a fresh code instead of an
+      // error they cannot act on.
+      if (err.isEmailNotVerified) {
+        _goToVerification(_emailController.text.trim(), err.message);
+        return;
+      }
+
+      // Everything else the backend writes for a person to read - "Your
+      // account has been suspended", "Invalid credentials" - is shown as-is.
       _showError(err.message);
     }
+  }
+
+  Future<void> _goToVerification(String email, String message) async {
+    _showError(message);
+
+    // Whatever code was mailed at signup may be long expired, so start this
+    // detour by sending a fresh one.
+    try {
+      await AuthService.instance.resendVerification(email);
+    } on ApiException {
+      // The screen can resend on its own, so a failure here is not the end.
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => OtpVerificationScreen(email: email, fullName: ''),
+      ),
+    );
   }
 
   void _showError(String message) {

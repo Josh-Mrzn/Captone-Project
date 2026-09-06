@@ -7,7 +7,11 @@ function fail(res, status, err, fallback) {
   console.error(`[auth] ${fallback}:`, err);
   return res.status(status).json({
     success: false,
-    message: err?.message || fallback
+    message: err?.message || fallback,
+    // Only set for failures a client should handle rather than just display -
+    // an unverified email sends the app to the code screen, not to an alert.
+    ...(err?.code ? { code: err.code } : {}),
+    ...(err?.email ? { email: err.email } : {})
   });
 }
 

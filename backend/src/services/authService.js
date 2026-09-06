@@ -380,11 +380,20 @@ export const authService = {
 
     user = await syncEmailVerifiedFromFirebase(user);
 
-    // Sellers and super admins handle money and other people's data, so they
-    // must verify first. Buyers can shop straight away; the verification email
-    // still goes out and they can confirm later.
-    if (user.role !== 'buyer' && user.firebaseUid && !user.emailVerified) {
-      throw new Error('Please verify your email before signing in. Check your Gmail inbox for the AgriFair verification link.');
+    // Nobody signs in on an unconfirmed address - buyers included. An account
+    // whose email was never proven can be someone else's address typed by
+    // mistake, and it is the address every reset code is later sent to.
+    if (user.firebaseUid && !user.emailVerified) {
+      const err = new Error(
+        client === 'mobile'
+          ? 'Please verify your email first. Enter the 6-digit code we sent you.'
+          : 'Please verify your email before signing in. Check your Gmail inbox for the AgriFair verification link.'
+      );
+      // A flag the client can act on. Matching the sentence above would break
+      // the moment the wording changes.
+      err.code = 'EMAIL_NOT_VERIFIED';
+      err.email = user.email;
+      throw err;
     }
 
     if (user.status === 'suspended') {
