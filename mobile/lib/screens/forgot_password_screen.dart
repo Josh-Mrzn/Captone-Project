@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import '../services/api_client.dart';
+import '../services/auth_service.dart';
+import 'otp_verification_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -31,14 +34,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
+    final email = _emailController.text.trim();
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-      _emailSent = true;
-    });
+    try {
+      await AuthService.instance.forgotPassword(email);
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _emailSent = true;
+      });
+
+      // The server answers the same way whether or not the address is
+      // registered, so this screen cannot promise a code has arrived - it
+      // moves on to the boxes and lets a wrong address fail there.
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(
+            email: email,
+            fullName: '',
+            purpose: OtpPurpose.passwordReset,
+          ),
+        ),
+      );
+    } on ApiException catch (err) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(err.message),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+    }
   }
 
   @override

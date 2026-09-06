@@ -6,6 +6,7 @@ import {
   updatePasswordByUserId
 } from '../repositories/userRepository.js';
 import LoginSession from '../models/LoginSession.js';
+import { getFirebaseAuth } from '../config/firebase.js';
 
 // ====================== GET CURRENT USER ======================
 export const getMeService = async (userId) => {
@@ -152,6 +153,18 @@ export const updatePasswordService = async (
 
   if (currentPassword === newPassword) {
     throw new Error('New password must be different');
+  }
+
+  // Firebase holds the password that login actually checks; the local hash is
+  // only the offline fallback. Updating Mongo alone left the account still
+  // signing in with the old password. Firebase goes first so a failure there
+  // stops the change instead of leaving the two out of step.
+  if (user.firebaseUid) {
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      throw new Error('Firebase Auth is not configured, so the password cannot be changed right now.');
+    }
+    await auth.updateUser(user.firebaseUid, { password: newPassword });
   }
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);

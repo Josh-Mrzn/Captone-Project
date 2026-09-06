@@ -1,5 +1,5 @@
 import express from 'express';
-import { passwordLimiter } from '../middleware/rateLimiter.js';
+import { otpRequestLimiter, otpSubmitLimiter } from '../middleware/rateLimiter.js';
 import {
   register,
   login,
@@ -16,13 +16,15 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
-router.post('/resend-verification', resendVerification);
-router.post('/verify-email-otp', passwordLimiter, verifyEmailOtp);
 
-// Guessing a 6-digit code is cheap without a limiter, so every step of the
-// reset flow sits behind the same one the change-password route uses.
-router.post('/forgot-password', passwordLimiter, forgotPassword);
-router.post('/verify-reset-otp', passwordLimiter, verifyResetOtp);
-router.post('/reset-password', passwordLimiter, resetPassword);
+// Asking for a code sends mail; submitting one does not. They are limited
+// separately so a person working through a normal flow - request, mistype,
+// retype, finish - never runs out partway.
+router.post('/resend-verification', otpRequestLimiter, resendVerification);
+router.post('/forgot-password', otpRequestLimiter, forgotPassword);
+
+router.post('/verify-email-otp', otpSubmitLimiter, verifyEmailOtp);
+router.post('/verify-reset-otp', otpSubmitLimiter, verifyResetOtp);
+router.post('/reset-password', otpSubmitLimiter, resetPassword);
 
 export default router;

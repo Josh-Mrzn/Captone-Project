@@ -142,6 +142,21 @@ class AuthService {
     return _messageFrom(body, 'Password updated.');
   }
 
+  /// Changes the password of the account already signed in, which is a
+  /// different door from the forgotten-password flow: this one proves who you
+  /// are with the current password instead of a mailed code.
+  Future<String> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final body = await _api.put('/user/reset-password', {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+
+    return _messageFrom(body, 'Password updated.');
+  }
+
   Future<AuthUser> me() async {
     final body = await _api.get('/user/me');
     return AuthUser.fromJson(body as Map<String, dynamic>);

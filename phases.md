@@ -192,7 +192,8 @@ Ang natitirang mga screen. Dito nagiging dalawahang-daan ang usapan ng buyer at 
 Ang mga natirang butas, kabilang ang isang pekeng screen sa web na madaling
 makalimutan hanggang sa defense.
 
-- [ ] Totohanin ang `ForgotPasswordPage.jsx` — `setTimeout` lang ito ngayon, walang tinatawag na API
+- [ ] Totohanin ang `ForgotPasswordPage.jsx` sa **web** — `setTimeout` lang ito ngayon, walang tinatawag na API
+      (tapos na ang mobile: forgot password, OTP, at change password)
 - [ ] Ipatupad sa dalawang client ang napagkasunduan sa Phase 1 tungkol sa forgot password at OTP
 - [ ] Ayusin ang Firebase package: `AgriFair.com` ang nakarehistro, `com.example.mobile_app` ang app
 - [ ] Palitan ang pangalan ng app mula sa template na `mobile_app`

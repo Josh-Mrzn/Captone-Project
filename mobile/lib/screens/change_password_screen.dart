@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/api_client.dart';
+import '../services/auth_service.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -29,29 +31,52 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
-    if (!mounted) return;
-    setState(() => _saving = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-            SizedBox(width: 10),
-            Text('Password updated successfully',
-                style: TextStyle(fontSize: 13)),
-          ],
+    try {
+      final message = await AuthService.instance.changePassword(
+        currentPassword: _currentCtrl.text,
+        newPassword: _newCtrl.text,
+      );
+
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _notify(message, ok: true);
+      Navigator.pop(context);
+    } on ApiException catch (err) {
+      // "Current password is incorrect" and "New password must be different"
+      // both come from the server, and both are worth showing as written.
+      if (!mounted) return;
+      setState(() => _saving = false);
+      _notify(err.message, ok: false);
+    }
+  }
+
+  void _notify(String message, {required bool ok}) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                ok ? Icons.check_circle_outline : Icons.error_outline,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(message, style: const TextStyle(fontSize: 13)),
+              ),
+            ],
+          ),
+          backgroundColor:
+              ok ? AppColors.primaryMedium : AppColors.primaryDark,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 4),
         ),
-        backgroundColor: AppColors.primaryMedium,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    Navigator.pop(context);
+      );
   }
 
   @override

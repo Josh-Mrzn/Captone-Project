@@ -6,17 +6,27 @@ import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../widgets/agrifair_logo.dart';
 import '../widgets/primary_button.dart';
+import 'new_password_screen.dart';
 import 'sign_in_screen.dart';
+
+/// The same six boxes serve both codes the backend sends. Only the wording and
+/// what happens after a correct code differ, so one screen covers both rather
+/// than a near-duplicate for each.
+enum OtpPurpose { signup, passwordReset }
 
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
   final String fullName;
+  final OtpPurpose purpose;
 
   const OtpVerificationScreen({
     super.key,
     required this.email,
     required this.fullName,
+    this.purpose = OtpPurpose.signup,
   });
+
+  bool get isReset => purpose == OtpPurpose.passwordReset;
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -104,6 +114,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     });
 
     try {
+      if (widget.isReset) {
+        // A correct reset code buys a short-lived token, not a session. The new
+        // password is set on the next screen, so the code never travels with it.
+        final resetToken = await AuthService.instance.verifyResetOtp(
+          email: widget.email,
+          code: _code,
+        );
+
+        if (!mounted) return;
+        setState(() => _isVerifying = false);
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => NewPasswordScreen(
+              email: widget.email,
+              resetToken: resetToken,
+            ),
+          ),
+        );
+        return;
+      }
+
       final message = await AuthService.instance.verifyEmailOtp(
         email: widget.email,
         code: _code,
@@ -138,7 +170,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _startResendTimer();
 
     try {
-      final message = await AuthService.instance.resendVerification(widget.email);
+      final message = widget.isReset
+          ? await AuthService.instance.forgotPassword(widget.email)
+          : await AuthService.instance.resendVerification(widget.email);
       if (!mounted) return;
       _notify(message);
     } on ApiException catch (err) {
