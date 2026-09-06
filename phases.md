@@ -84,7 +84,7 @@ ng data ngayon, dalawang beses nating aayusin mamaya.
 - [x] Pumili ng iisang pangalan: `variety` (backend) o `category` (mobile)
 - [x] Ilabas ang `averageRating` sa product response, kinuha mula sa Review model
 - [x] Desisyunan ang `soldCount` at `tag` — wala ang mga ito sa Product model
-- [ ] Isulat ang eksaktong response shape ng `GET /api/products/:id` bilang sanggunian ng dalawa
+- [x] Isulat ang eksaktong response shape ng `GET /api/products/:id` bilang sanggunian ng dalawa — [API_CONTRACT.md](API_CONTRACT.md)
 
 **Tapos kapag:** may nakasulat na kontrata na kayang sundin ng mobile at web nang
 hindi nagtatanong.
