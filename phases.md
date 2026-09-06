@@ -4,7 +4,7 @@ Siyam na phase, sunod-sunod. Konektado na ang web; ang mobile ay UI pa lang.
 Ang backend ang pinagsasaluhan nilang gitna — doon tayo magsisimula.
 
 - **Repo:** Josh-Mrzn/Captone-Project
-- **Branch:** `rendays/backend-orders`
+- **Branch:** `rendays-backend-orders`
 - **Petsa:** Set 3, 2026
 
 ---
@@ -47,16 +47,11 @@ Puro hardcoded na mock data.
 
 ---
 
-## ⚠ Naka-block ngayon: walang push access
+## ✅ Naipush na
 
-Tapos na ang merge sa local — nasa `rendays/backend-orders` na ang buong Flutter app
-kasama ang history ni Josh. Pero tinanggihan ang push:
-
-```
-403 — Permission to Josh-Mrzn/Captone-Project.git denied to reycadealba07192303-ai
-```
-
-Hangga't hindi ito naaayos, walang makikita ang grupo sa nagawa.
+Nasa GitHub na ang lahat sa branch na `rendays-backend-orders`, kasama ang buong
+Flutter app at ang history ni Josh. Ang natitira na lang ay ang pull request
+papuntang `main`.
 
 ---
 
@@ -70,9 +65,11 @@ nauna, at may malinaw na palatandaan kung kailan ito tapos.
 
 Walang saysay ang lahat ng susunod kung hindi makakapasok sa repo ang trabaho.
 
-- [ ] Padagdag kay Josh bilang collaborator (Settings → Collaborators)
-- [ ] Tingnan kung tamang GitHub account ang naka-login sa git — `reycadealba07192303-ai` ang tumatawag ngayon
-- [ ] I-push ang `rendays/backend-orders`, tapos gumawa ng pull request papuntang `main`
+- [x] Padagdag kay Josh bilang collaborator (Settings → Collaborators)
+- [x] Tingnan kung tamang GitHub account ang naka-login sa git — `reycadealba07192303-ai` ang tumatawag ngayon
+- [x] I-push ang branch — naipush bilang `rendays-backend-orders`
+      (may branch nang `rendays` sa remote, kaya hindi puwede ang `rendays/backend-orders`: magkasalungat ang ref path)
+- [ ] Gumawa ng pull request papuntang `main`
 
 **Tapos kapag:** nakikita na ng buong grupo ang `mobile/` sa GitHub.
 
