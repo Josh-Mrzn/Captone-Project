@@ -1,11 +1,31 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+/**
+ * "Reyca De Alba" and "reyca  de alba" are the same person claiming the same
+ * name, so both collapse to one key. Comparing the raw field would let either
+ * spelling slip past a check on the other.
+ */
+export function toNameKey(name) {
+  return typeof name === 'string'
+    ? name.trim().toLowerCase().replace(/\s+/g, ' ')
+    : '';
+}
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
     trim: true
+  },
+  /**
+   * Derived from `name` on every save; never set by hand. Kept as its own
+   * field so the uniqueness check is an indexed lookup rather than a regex
+   * scan over every user.
+   */
+  nameKey: {
+    type: String,
+    index: true
   },
   email: {
     type: String,
@@ -124,6 +144,12 @@ const userSchema = new mongoose.Schema({
   theme: { type: String, enum: ['light', 'dark'], default: 'light' },
 }, {
   timestamps: true
+});
+
+userSchema.pre('save', function () {
+  if (this.isModified('name') || this.isNew) {
+    this.nameKey = toNameKey(this.name);
+  }
 });
 
 userSchema.pre('save', async function () {

@@ -6,6 +6,8 @@ import {
   updatePasswordByUserId
 } from '../repositories/userRepository.js';
 import LoginSession from '../models/LoginSession.js';
+import { authRepository } from '../repositories/authRepository.js';
+import { toNameKey } from '../models/User.js';
 import { getFirebaseAuth } from '../config/firebase.js';
 
 // ====================== GET CURRENT USER ======================
@@ -22,6 +24,34 @@ export const updateProfileService = async (userId, updateData, uploadedFiles = {
     if (updateData[key] !== undefined) {
       filteredData[key] = updateData[key];
     }
+  }
+
+  // Name and email are unique across users, and this route can change both.
+  // The write below goes through findOneAndUpdate, which skips the pre-save
+  // hook, so nameKey is derived here instead of being left stale.
+  if (filteredData.name !== undefined) {
+    const cleanName = String(filteredData.name).trim();
+    if (!cleanName) throw new Error('Name cannot be empty');
+
+    const nameKey = toNameKey(cleanName);
+    if (await authRepository.findByNameKey(nameKey, userId)) {
+      throw new Error('That name is already taken. Please choose another one.');
+    }
+
+    filteredData.name = cleanName;
+    filteredData.nameKey = nameKey;
+  }
+
+  if (filteredData.email !== undefined) {
+    const cleanEmail = String(filteredData.email).trim().toLowerCase();
+    if (!cleanEmail) throw new Error('Email cannot be empty');
+
+    const owner = await authRepository.findByEmail(cleanEmail);
+    if (owner && owner.userId !== userId) {
+      throw new Error('User with this email already exists');
+    }
+
+    filteredData.email = cleanEmail;
   }
 
   if (updateData.sellerProfile) {

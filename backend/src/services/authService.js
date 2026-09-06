@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { authRepository } from '../repositories/authRepository.js';
+import { toNameKey } from '../models/User.js';
 import { getFirebaseAuth } from '../config/firebase.js';
 import LoginSession from '../models/LoginSession.js';
 import { emailVerificationService } from './passwordResetService.js';
@@ -211,6 +212,13 @@ export const authService = {
     const existingUser = await authRepository.findByEmail(cleanEmail);
     if (existingUser) {
       throw new Error('User with this email already exists');
+    }
+
+    // Checked before the Firebase user is created, so a rejected signup does
+    // not leave an orphan account behind in Firebase.
+    const takenName = await authRepository.findByNameKey(toNameKey(cleanName));
+    if (takenName) {
+      throw new Error('That name is already taken. Please choose another one.');
     }
 
     const auth = getFirebaseAuth();

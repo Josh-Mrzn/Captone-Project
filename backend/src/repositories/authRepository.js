@@ -14,6 +14,13 @@ export const authRepository = {
     return User.findOne({ email }).select('+password');
   },
 
+  /** Optionally skips one user, so editing a profile does not collide with itself. */
+  async findByNameKey(nameKey, exceptUserId = null) {
+    const query = { nameKey };
+    if (exceptUserId != null) query.userId = { $ne: exceptUserId };
+    return User.findOne(query).select('name email');
+  },
+
   async findByFirebaseUid(firebaseUid) {
     return User.findOne({ firebaseUid }).select('+password');
   },

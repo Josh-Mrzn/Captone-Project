@@ -27,7 +27,9 @@ export const register = async (req, res) => {
       user
     });
   } catch (err) {
-    const isDuplicate = /already exists/i.test(err?.message || '');
+    // A taken name is the same class of failure as a taken email: the request
+    // conflicts with something already there, not malformed input.
+    const isDuplicate = /already (exists|taken)/i.test(err?.message || '');
     return fail(res, isDuplicate ? 409 : 400, err, 'Registration failed');
   }
 };
